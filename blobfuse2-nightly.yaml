@@ -593,7 +593,7 @@ jobs:
           matrix:
             SUSE-15G2:
               DistroVer: "Suse-15Gen2"
-              AgentName: "SUSE 15G2"
+              AgentName: 'SUSE 15 Blobfuse2-Release'
               Description: "SUSE Ent Linux 15-SP1-Gen2"
               containerName: 'test-cnt-suse-15'
 
