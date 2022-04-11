@@ -399,26 +399,6 @@ func (dl *Datalake) GetAttr(name string) (attr *internal.ObjAttr, err error) {
 	return attr, nil
 }
 
-func (dl *Datalake) GetXAttr(options internal.GetXAttrOptions) (value string, attr *internal.ObjAttr, err error) {
-	log.Trace("Datalake::GetXAttr : name %s, attr: %s", options.Name, options.Attr)
-	if strings.HasPrefix(options.Attr, "meta-") {
-		attr, err = dl.GetAttr(options.Name)
-		if err != nil {
-			log.Err("Datalake::GetXAttr : Failed to get datalake properties for %s (%s)", options.Name, err.Error())
-			return "", attr, err
-		}
-		value, found := attr.Metadata[strings.TrimPrefix(options.Attr, "meta-")]
-		if !found {
-			log.Err("Datalake::GetXAttr : Failed to find extended attribute %s for %s", options.Name, options.Name)
-			return "", attr, syscall.ENODATA
-		} else {
-			return value, attr, nil
-		}
-	}
-	log.Err("Datalake::GetXAttr : Failed to find extended attribute %s for %s", options.Name, options.Name)
-	return "", attr, syscall.ENODATA
-}
-
 // List : Get a list of path matching the given prefix
 // This fetches the list using a marker so the caller code should handle marker logic
 // If count=0 - fetch max entries
@@ -585,4 +565,35 @@ func (dl *Datalake) ChangeOwner(name string, _ int, _ int) error {
 	// 	return err
 	// }
 	return syscall.ENOTSUP
+}
+
+func (dl *Datalake) GetXAttr(options internal.GetXAttrOptions) (value string, attr *internal.ObjAttr, err error) {
+	log.Trace("Datalake::GetXAttr : name %s, attr: %s", options.Name, options.Attr)
+	if strings.HasPrefix(options.Attr, "meta-") {
+		attr, err = dl.GetAttr(options.Name)
+		if err != nil {
+			log.Err("Datalake::GetXAttr : Failed to get datalake properties for %s (%s)", options.Name, err.Error())
+			return "", attr, err
+		}
+		value, found := attr.Metadata[strings.TrimPrefix(options.Attr, "meta-")]
+		if !found {
+			log.Err("Datalake::GetXAttr : Failed to find extended attribute %s for %s", options.Name, options.Name)
+			return "", attr, syscall.ENODATA
+		} else {
+			return value, attr, nil
+		}
+	}
+	log.Err("Datalake::GetXAttr : Failed to find extended attribute %s for %s", options.Name, options.Name)
+	return "", attr, syscall.ENODATA
+}
+
+func (dl *Datalake) ListXAttr(options internal.ListXAttrOptions) (metadata map[string]string, attr *internal.ObjAttr, err error) {
+	log.Trace("Datalake::ListXAttr : name %s", options.Name)
+	attr, err = dl.GetAttr(options.Name)
+	if err != nil {
+		log.Err("Datalake::ListXAttr : Failed to get datalake properties for %s (%s)", options.Name, err.Error())
+		return make(map[string]string), attr, err
+	}
+
+	return attr.Metadata, attr, syscall.ENODATA
 }

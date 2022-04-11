@@ -193,6 +193,15 @@ type SetXAttrOptions struct {
 	Replace bool
 }
 
+type ListXAttrOptions struct {
+	Name string
+}
+
+type RemoveXAttrOptions struct {
+	Name string
+	Attr string
+}
+
 type ChmodOptions struct {
 	Name string
 	Mode os.FileMode

@@ -303,6 +303,20 @@ func (base *BaseComponent) SetXAttr(options SetXAttrOptions) error {
 	return nil
 }
 
+func (base *BaseComponent) ListXAttr(options ListXAttrOptions) (map[string]string, *ObjAttr, error) {
+	if base.next != nil {
+		return base.next.ListXAttr(options)
+	}
+	return make(map[string]string), &ObjAttr{}, nil
+}
+
+func (base *BaseComponent) RemoveXAttr(options RemoveXAttrOptions) error {
+	if base.next != nil {
+		return base.next.RemoveXAttr(options)
+	}
+	return nil
+}
+
 func (base *BaseComponent) Chmod(options ChmodOptions) error {
 	if base.next != nil {
 		return base.next.Chmod(options)

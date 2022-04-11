@@ -111,6 +111,8 @@ extern int libfuse_fsyncdir(char *path, int, fuse_file_info_t *);
 
 extern int libfuse_getxattr(char *path, char *name, char *value, size_t size);
 extern int libfuse_setxattr(char *path, char *name, char *value, size_t size, int flags);
+extern int libfuse_listxattr(char *path, char *list, size_t size);
+extern int libfuse_removexattr(char *path, char *name);
 
 // chmod, chown and utimens are lib version specific so defined later
 
@@ -189,6 +191,8 @@ static int populate_callbacks(fuse_operations_t *opt)
 
     opt->getxattr = (int (*)(const char *path, const char *name, char *value, size_t size))libfuse_getxattr;
     opt->setxattr = (int (*)(const char *path, const char *name, const char *value, size_t size, int flags))libfuse_setxattr;
+    opt->listxattr = (int (*)(const char *path, char *list, size_t size))libfuse_listxattr;
+    opt->removexattr = (int (*)(const char *path, const char *name))libfuse_removexattr;
 
     #ifdef __FUSE2__
     opt->init       = (void *(*)(fuse_conn_info_t *))libfuse2_init;

@@ -327,6 +327,35 @@ func (mr *MockComponentMockRecorder) SetXAttr(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetXAttr", reflect.TypeOf((*MockComponent)(nil).SetXAttr), arg0)
 }
 
+// ListXAttr mocks base method.
+func (m *MockComponent) ListXAttr(arg0 ListXAttrOptions) (map[string]string, *ObjAttr, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListXAttr", arg0)
+	ret0, _ := ret[0].(map[string]string)
+	ret1, _ := ret[1].(*ObjAttr)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListXAttr indicates an expected call of ListXAttr.
+func (mr *MockComponentMockRecorder) ListXAttr(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListXAttr", reflect.TypeOf((*MockComponent)(nil).ListXAttr), arg0)
+}
+
+// RemoveXAttr mocks base method.
+func (m *MockComponent) RemoveXAttr(arg0 RemoveXAttrOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveXAttr", arg0)
+	ret0, _ := ret[2].(error)
+	return ret0
+}
+
+// RemoveXAttr indicates an expected call of RemoveXAttr.
+func (mr *MockComponentMockRecorder) RemoveXAttr(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveXAttr", reflect.TypeOf((*MockComponent)(nil).RemoveXAttr), arg0)
+}
 
 // InvalidateObject mocks base method.
 func (m *MockComponent) InvalidateObject(arg0 string) {

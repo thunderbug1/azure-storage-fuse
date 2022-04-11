@@ -425,8 +425,19 @@ func (az *AzStorage) GetAttr(options internal.GetAttrOptions) (attr *internal.Ob
 }
 
 func (az *AzStorage) GetXAttr(options internal.GetXAttrOptions) (value string, attr *internal.ObjAttr, err error) {
-	//log.Trace("AzStorage::GetAttr : Get attributes of file %s", name)
 	return az.storage.GetXAttr(options)
+}
+
+func (az *AzStorage) SetXAttr(options internal.SetXAttrOptions) error {
+	return az.storage.SetXAttr(options)
+}
+
+func (az *AzStorage) ListXAttr(options internal.ListXAttrOptions) (metadata map[string]string, attr *internal.ObjAttr, err error) {
+	return az.storage.ListXAttr(options)
+}
+
+func (az *AzStorage) RemoveXAttr(options internal.RemoveXAttrOptions) error {
+	return az.storage.RemoveXAttr(options)
 }
 
 func (az *AzStorage) Chmod(options internal.ChmodOptions) error {
