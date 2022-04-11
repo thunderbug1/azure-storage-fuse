@@ -41,6 +41,7 @@
 #include <string.h>
 #include <linux/fs.h>
 #include <sys/types.h>
+#include <sys/xattr.h>
 #include <errno.h>
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -109,6 +110,7 @@ extern int libfuse_fsync(char *path, int, fuse_file_info_t *fi);
 extern int libfuse_fsyncdir(char *path, int, fuse_file_info_t *);
 
 extern int libfuse_getxattr(char *path, char *name, char *value, size_t size);
+extern int libfuse_setxattr(char *path, char *name, char *value, size_t size, int flags);
 
 // chmod, chown and utimens are lib version specific so defined later
 
@@ -186,7 +188,7 @@ static int populate_callbacks(fuse_operations_t *opt)
     opt->fsyncdir   = (int (*)(const char *path, int, fuse_file_info_t *))libfuse_fsyncdir;
 
     opt->getxattr = (int (*)(const char *path, const char *name, char *value, size_t size))libfuse_getxattr;
-
+    opt->setxattr = (int (*)(const char *path, const char *name, const char *value, size_t size, int flags))libfuse_setxattr;
 
     #ifdef __FUSE2__
     opt->init       = (void *(*)(fuse_conn_info_t *))libfuse2_init;

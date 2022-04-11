@@ -130,6 +130,7 @@ type Component interface {
 	SetAttr(SetAttrOptions) error
 
 	GetXAttr(GetXAttrOptions) (string, *ObjAttr, error)
+	SetXAttr(SetXAttrOptions) error
 
 	Chmod(ChmodOptions) error
 	Chown(ChownOptions) error

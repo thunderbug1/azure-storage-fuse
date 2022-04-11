@@ -956,3 +956,30 @@ func libfuse_getxattr(path *C.char, attr *C.char, value *C.char, size C.size_t) 
 		return C.int(len(v) + 1)
 	}
 }
+
+// libfuse_setxattr sets the value of an extended attribute of a file
+//export libfuse_setxattr
+func libfuse_setxattr(path *C.char, attr *C.char, value *C.char, size C.size_t, flags C.int) C.int {
+	name := trimFusePath(path)
+	name = common.NormalizeObjectName(name)
+
+	xattr := C.GoString(attr)
+	xvalue := C.GoString(value)
+	log.Trace("Libfuse::libfuse_setxattr : %s, attr: %s, value: %s", name, xattr, xvalue)
+
+	// Check prefix and do ENOTSUP
+
+	err := fuseFS.NextComponent().SetXAttr(internal.SetXAttrOptions{Name: name, Attr: xattr, Value: xvalue, Create: flags&C.XATTR_CREATE != 0, Replace: flags&C.XATTR_REPLACE != 0})
+	if err != nil {
+		log.Err("Libfuse::libfuse_setxattr : error setting extended attribute %s [%s]", name, err.Error())
+		if os.IsNotExist(err) {
+			return -C.ENOENT
+		} else if err == syscall.ENODATA {
+			return -C.ENODATA
+		} else if err == syscall.EEXIST {
+			return -C.EEXIST
+		}
+		return -C.EIO
+	}
+	return 0
+}

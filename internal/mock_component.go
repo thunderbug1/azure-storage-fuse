@@ -313,6 +313,20 @@ func (mr *MockComponentMockRecorder) GetXAttr(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetXAttr", reflect.TypeOf((*MockComponent)(nil).GetXAttr), arg0)
 }
 
+// SetXAttr mocks base method.
+func (m *MockComponent) SetXAttr(arg0 SetXAttrOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetXAttr", arg0)
+	ret0, _ := ret[2].(error)
+	return ret0
+}
+
+// SetXAttr indicates an expected call of SetXAttr.
+func (mr *MockComponentMockRecorder) SetXAttr(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetXAttr", reflect.TypeOf((*MockComponent)(nil).SetXAttr), arg0)
+}
+
 
 // InvalidateObject mocks base method.
 func (m *MockComponent) InvalidateObject(arg0 string) {

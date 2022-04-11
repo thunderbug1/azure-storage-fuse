@@ -185,6 +185,14 @@ type GetXAttrOptions struct {
 	Attr string
 }
 
+type SetXAttrOptions struct {
+	Name    string
+	Attr    string
+	Value   string
+	Create  bool
+	Replace bool
+}
+
 type ChmodOptions struct {
 	Name string
 	Mode os.FileMode
