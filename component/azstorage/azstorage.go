@@ -432,7 +432,7 @@ func (az *AzStorage) SetXAttr(options internal.SetXAttrOptions) error {
 	return az.storage.SetXAttr(options)
 }
 
-func (az *AzStorage) ListXAttr(options internal.ListXAttrOptions) (metadata map[string]string, attr *internal.ObjAttr, err error) {
+func (az *AzStorage) ListXAttr(options internal.ListXAttrOptions) (attr *internal.ObjAttr, err error) {
 	return az.storage.ListXAttr(options)
 }
 

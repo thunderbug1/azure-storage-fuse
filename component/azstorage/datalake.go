@@ -587,13 +587,14 @@ func (dl *Datalake) GetXAttr(options internal.GetXAttrOptions) (value string, at
 	return "", attr, syscall.ENODATA
 }
 
-func (dl *Datalake) ListXAttr(options internal.ListXAttrOptions) (metadata map[string]string, attr *internal.ObjAttr, err error) {
-	log.Trace("Datalake::ListXAttr : name %s", options.Name)
-	attr, err = dl.GetAttr(options.Name)
-	if err != nil {
-		log.Err("Datalake::ListXAttr : Failed to get datalake properties for %s (%s)", options.Name, err.Error())
-		return make(map[string]string), attr, err
-	}
+func (dl *Datalake) SetXAttr(options internal.SetXAttrOptions) error {
+	return nil
+}
 
-	return attr.Metadata, attr, syscall.ENODATA
+func (dl *Datalake) ListXAttr(options internal.ListXAttrOptions) (attr *internal.ObjAttr, err error) {
+	return &internal.ObjAttr{}, nil
+}
+
+func (dl *Datalake) RemoveXAttr(options internal.RemoveXAttrOptions) error {
+	return nil
 }

@@ -1003,7 +1003,7 @@ func libfuse_listxattr(path *C.char, list *C.char, size C.size_t) C.int {
 
 	log.Trace("Libfuse::libfuse_listxattr : %s", name)
 
-	metadata, _, err := fuseFS.NextComponent().ListXAttr(internal.ListXAttrOptions{Name: name})
+	attr, err := fuseFS.NextComponent().ListXAttr(internal.ListXAttrOptions{Name: name})
 	if err != nil {
 		log.Err("Libfuse::libfuse_listxattr : error listing extended attribute %s [%s]", name, err.Error())
 		if os.IsNotExist(err) {
@@ -1011,11 +1011,12 @@ func libfuse_listxattr(path *C.char, list *C.char, size C.size_t) C.int {
 		}
 		return -C.EIO
 	}
+	metadata := attr.Metadata
 	if len(metadata) == 0 {
 		return 0
 	}
 	s := 0
-	for key, _ := range metadata {
+	for key := range metadata {
 		s += len(internal.MetadataXAttrPrefix) + len(key) + 1
 	}
 
@@ -1026,10 +1027,10 @@ func libfuse_listxattr(path *C.char, list *C.char, size C.size_t) C.int {
 	} else {
 		data := (*[1 << 30]byte)(unsafe.Pointer(list))
 		offset := 0
-		for key, _ := range metadata {
-			copy(data[offset:len(key)-1], key)
-			data[len(key)] = 0
-			offset += len(key) + 1
+		for key := range metadata {
+			copy(data[offset:offset+len(internal.MetadataXAttrPrefix)+len(key)], internal.MetadataXAttrPrefix+key)
+			data[offset+len(internal.MetadataXAttrPrefix)+len(key)] = 0
+			offset += len(internal.MetadataXAttrPrefix) + len(key) + 1
 		}
 		return C.int(s)
 	}

@@ -53,6 +53,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"strings"
 	"syscall"
 	"unsafe"
 )
@@ -901,9 +902,15 @@ func libfuse_getxattr(path *C.char, attr *C.char, value *C.char, size C.size_t) 
 	xattr := C.GoString(attr)
 	log.Trace("Libfuse::libfuse_getxattr : %s, attr: %s", name, xattr)
 
+	// We only support user.meta- extended attributes
+	if !strings.HasPrefix(xattr, "user.meta-") {
+		log.Err("Libfuse::libfuse_getxattr : error reading extended attribute %s, attr: %s", name, xattr)
+		return -C.ENODATA
+	}
+
 	v, _, err := fuseFS.NextComponent().GetXAttr(internal.GetXAttrOptions{Name: name, Attr: xattr})
 	if err != nil {
-		log.Err("Libfuse::libfuse_getxattr : error reading extended attribute %s [%s]", name, err.Error())
+		log.Err("Libfuse::libfuse_getxattr : error reading extended attribute %s, attr: %s [%s]", name, xattr, err.Error())
 		if os.IsNotExist(err) {
 			return -C.ENOENT
 		} else if err == syscall.ENODATA {
@@ -921,4 +928,103 @@ func libfuse_getxattr(path *C.char, attr *C.char, value *C.char, size C.size_t) 
 		data[len(v)] = 0
 		return C.int(len(v) + 1)
 	}
+}
+
+// libfuse_setxattr sets the value of an extended attribute of a file
+//export libfuse_setxattr
+func libfuse_setxattr(path *C.char, attr *C.char, value *C.char, size C.size_t, flags C.int) C.int {
+	name := trimFusePath(path)
+	name = common.NormalizeObjectName(name)
+
+	xattr := C.GoString(attr)
+	xvalue := C.GoString(value)
+	log.Trace("Libfuse::libfuse_setxattr : %s, attr: %s, value: %s", name, xattr, xvalue)
+
+	// We only support user.meta- extended attributes
+	if !strings.HasPrefix(xattr, "user.meta-") {
+		log.Err("Libfuse::libfuse_setxattr : error reading extended attribute %s, attr: %s", name, xattr)
+		return -C.ENOTSUP
+	}
+
+	err := fuseFS.NextComponent().SetXAttr(internal.SetXAttrOptions{Name: name, Attr: xattr, Value: xvalue, Create: flags&C.XATTR_CREATE != 0, Replace: flags&C.XATTR_REPLACE != 0})
+	if err != nil {
+		log.Err("Libfuse::libfuse_setxattr : error setting extended attribute %s [%s]", name, err.Error())
+		if os.IsNotExist(err) {
+			return -C.ENOENT
+		} else if err == syscall.ENODATA {
+			return -C.ENODATA
+		} else if err == syscall.EEXIST {
+			return -C.EEXIST
+		}
+		return -C.EIO
+	}
+	return 0
+}
+
+// libfuse_listxattr list extended attribute names
+//export libfuse_listxattr
+func libfuse_listxattr(path *C.char, list *C.char, size C.size_t) C.int {
+	name := trimFusePath(path)
+	name = common.NormalizeObjectName(name)
+
+	log.Trace("Libfuse::libfuse_listxattr : %s", name)
+
+	attr, err := fuseFS.NextComponent().ListXAttr(internal.ListXAttrOptions{Name: name})
+	if err != nil {
+		log.Err("Libfuse::libfuse_listxattr : error listing extended attribute %s [%s]", name, err.Error())
+		if os.IsNotExist(err) {
+			return -C.ENOENT
+		}
+		return -C.EIO
+	}
+	metadata := attr.Metadata
+	if len(metadata) == 0 {
+		return 0
+	}
+	s := 0
+	for key := range metadata {
+		s += len(internal.MetadataXAttrPrefix) + len(key) + 1
+	}
+
+	if size == 0 {
+		return C.int(s)
+	} else if size < C.ulong(s) {
+		return -C.ERANGE
+	} else {
+		data := (*[1 << 30]byte)(unsafe.Pointer(list))
+		offset := 0
+		for key := range metadata {
+			copy(data[offset:offset+len(internal.MetadataXAttrPrefix)+len(key)], internal.MetadataXAttrPrefix+key)
+			data[offset+len(internal.MetadataXAttrPrefix)+len(key)] = 0
+			offset += len(internal.MetadataXAttrPrefix) + len(key) + 1
+		}
+		return C.int(s)
+	}
+}
+
+// libfuse_removexattr sets the value of an extended attribute of a file
+//export libfuse_removexattr
+func libfuse_removexattr(path *C.char, attr *C.char) C.int {
+	name := trimFusePath(path)
+	name = common.NormalizeObjectName(name)
+
+	xattr := C.GoString(attr)
+	log.Trace("Libfuse::libfuse_removexattr : %s, attr: %s", name, xattr)
+
+	// We only support user.meta- extended attributes
+	if !strings.HasPrefix(xattr, "user.meta-") {
+		log.Err("Libfuse::libfuse_removexattr : error reading extended attribute %s, attr: %s", name, xattr)
+		return -C.ENODATA
+	}
+	err := fuseFS.NextComponent().RemoveXAttr(internal.RemoveXAttrOptions{Name: name, Attr: xattr})
+	if err != nil {
+		log.Err("Libfuse::libfuse_removexattr : error removing extended attribute %s [%s]", name, err.Error())
+		if os.IsNotExist(err) {
+			return -C.ENOENT
+		} else if err == syscall.ENODATA {
+			return -C.ENODATA
+		}
+		return -C.EIO
+	}
+	return 0
 }

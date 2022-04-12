@@ -131,7 +131,7 @@ type Component interface {
 
 	GetXAttr(GetXAttrOptions) (string, *ObjAttr, error)
 	SetXAttr(SetXAttrOptions) error
-	ListXAttr(ListXAttrOptions) (map[string]string, *ObjAttr, error)
+	ListXAttr(ListXAttrOptions) (*ObjAttr, error)
 	RemoveXAttr(RemoveXAttrOptions) error
 
 	Chmod(ChmodOptions) error

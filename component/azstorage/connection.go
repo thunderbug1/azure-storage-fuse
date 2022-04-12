@@ -105,7 +105,7 @@ type AzConnection interface {
 
 	GetXAttr(options internal.GetXAttrOptions) (value string, attr *internal.ObjAttr, err error)
 	SetXAttr(options internal.SetXAttrOptions) error
-	ListXAttr(options internal.ListXAttrOptions) (metadata map[string]string, attr *internal.ObjAttr, err error)
+	ListXAttr(options internal.ListXAttrOptions) (attr *internal.ObjAttr, err error)
 	RemoveXAttr(options internal.RemoveXAttrOptions) error
 
 	// Standard operations to be supported by any account type

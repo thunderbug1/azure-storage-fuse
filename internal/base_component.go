@@ -303,11 +303,11 @@ func (base *BaseComponent) SetXAttr(options SetXAttrOptions) error {
 	return nil
 }
 
-func (base *BaseComponent) ListXAttr(options ListXAttrOptions) (map[string]string, *ObjAttr, error) {
+func (base *BaseComponent) ListXAttr(options ListXAttrOptions) (*ObjAttr, error) {
 	if base.next != nil {
 		return base.next.ListXAttr(options)
 	}
-	return make(map[string]string), &ObjAttr{}, nil
+	return &ObjAttr{}, nil
 }
 
 func (base *BaseComponent) RemoveXAttr(options RemoveXAttrOptions) error {

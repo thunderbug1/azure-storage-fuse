@@ -328,13 +328,12 @@ func (mr *MockComponentMockRecorder) SetXAttr(arg0 interface{}) *gomock.Call {
 }
 
 // ListXAttr mocks base method.
-func (m *MockComponent) ListXAttr(arg0 ListXAttrOptions) (map[string]string, *ObjAttr, error) {
+func (m *MockComponent) ListXAttr(arg0 ListXAttrOptions) (*ObjAttr, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListXAttr", arg0)
-	ret0, _ := ret[0].(map[string]string)
-	ret1, _ := ret[1].(*ObjAttr)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret0, _ := ret[1].(*ObjAttr)
+	ret1, _ := ret[2].(error)
+	return ret0, ret1
 }
 
 // ListXAttr indicates an expected call of ListXAttr.
