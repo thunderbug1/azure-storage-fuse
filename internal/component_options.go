@@ -186,11 +186,12 @@ type GetXAttrOptions struct {
 }
 
 type SetXAttrOptions struct {
-	Name    string
-	Attr    string
-	Value   string
-	Create  bool
-	Replace bool
+	Name           string
+	Attr           string
+	Value          string
+	Create         bool
+	Replace        bool
+	CachedMetadata map[string]string
 }
 
 type ListXAttrOptions struct {
@@ -198,8 +199,9 @@ type ListXAttrOptions struct {
 }
 
 type RemoveXAttrOptions struct {
-	Name string
-	Attr string
+	Name           string
+	Attr           string
+	CachedMetadata map[string]string
 }
 
 type ChmodOptions struct {

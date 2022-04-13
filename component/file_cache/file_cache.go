@@ -53,6 +53,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	// XAttrCreateOrReplace creates or update the xattr
+	XAttrCreateOrReplace = iota
+	// XAttrCreate is used to fail when the xattr already exists.
+	XAttrCreate
+	// XAttrReplace is used to fail when the xattr does not exist.
+	XAttrReplace
+)
+
 // Common structure for Component
 type FileCache struct {
 	internal.BaseComponent
@@ -1096,76 +1105,229 @@ func (fc *FileCache) GetAttr(options internal.GetAttrOptions) (*internal.ObjAttr
 	return attrs, nil
 }
 
-// // GetXAttr: Consolidate attributes from storage and local cache
-// func (fc *FileCache) GetXAttr(options internal.GetXAttrOptions) (string, *internal.ObjAttr, error) {
-// 	log.Trace("FileCache::GetXAttr : %s", options.Name)
+// GetXAttr: Consolidate attributes from storage and local cache
+func (fc *FileCache) GetXAttr(options internal.GetXAttrOptions) (string, *internal.ObjAttr, error) {
+	log.Trace("FileCache::GetXAttr : %s", options.Name)
 
-// 	// For get attr, there are three different path situations we have to potentially handle.
-// 	// 1. Path in storage but not in local cache
-// 	// 2. Path not in storage but in local cache (this could happen if we recently created the file [and are currently writing to it]) (also supports immutable containers)
-// 	// 3. Path in storage and in local cache (this could result in dirty properties on the service if we recently wrote to the file)
+	// For get attr, there are three different path situations we have to potentially handle.
+	// 1. Path in storage but not in local cache
+	// 2. Path not in storage but in local cache (this could happen if we recently created the file [and are currently writing to it]) (also supports immutable containers)
+	// 3. Path in storage and in local cache (this could result in dirty properties on the service if we recently wrote to the file)
 
-// 	// To cover case 1, get attributes from storage
-// 	var exists bool
-// 	value, attrs, err := fc.NextComponent().GetXAttr(options)
-// 	if err != nil {
-// 		if err == syscall.ENOENT || os.IsNotExist(err) {
-// 			log.Debug("FileCache::GetXAttr : %s does not exist in storage", options.Name)
-// 			exists = false
-// 		} else {
-// 			log.Err("FileCache::GetXAttr : Failed to get xattr of %s [%s]", options.Name, err.Error())
-// 			return "", &internal.ObjAttr{}, err
-// 		}
-// 	} else {
-// 		// All directory operations are guaranteed to be synced with storage so they cannot be in a case 2 or 3 state.
-// 		if attrs.IsDir() {
-// 			return value, attrs, err
-// 		}
-// 		exists = true
-// 	}
+	// To cover case 1, get attributes from storage
+	var exists bool
+	value, attrs, err := fc.NextComponent().GetXAttr(options)
+	if err != nil {
+		if err == syscall.ENOENT || os.IsNotExist(err) {
+			log.Debug("FileCache::GetXAttr : %s does not exist in storage", options.Name)
+			exists = false
+		} else {
+			log.Err("FileCache::GetXAttr : Failed to get xattr of %s [%s]", options.Name, err.Error())
+			return "", &internal.ObjAttr{}, err
+		}
+	} else {
+		// All directory operations are guaranteed to be synced with storage so they cannot be in a case 2 or 3 state.
+		if attrs.IsDir() {
+			return value, attrs, err
+		}
+		exists = true
+	}
 
-// 	// To cover cases 2 and 3, grab the attributes from the local cache
-// 	localPath := filepath.Join(fc.tmpPath, options.Name)
-// 	// Extended attributes are specified as namespace.attribute
-// 	// For metadata, the attribute will be of the form "user.meta-key"
-// 	key := options.Attr
-// 	// Find size.
-// 	size, err := syscall.Getxattr(localPath, key, nil)
-// 	if err == nil || os.IsExist(err) {
-// 		buf := make([]byte, size)
-// 		// Read into buffer of that size.
-// 		size, err := syscall.Getxattr(localPath, key, buf)
-// 		if err != nil {
-// 			log.Err("FileCache::GetXAttr : Failed to get xattr %s of %s [%s]", options.Attr, options.Name, err.Error())
-// 			return "", &internal.ObjAttr{}, err
-// 		}
-// 		if exists { // Case 3 (file in storage and in local cache) so update the relevant attributes
-// 			// Return from local cache only if file is not under download or deletion
-// 			// If file is under download then taking size or mod time from it will be incorrect.
-// 			if !fc.fileLocks.Locked(options.Name) {
-// 				log.Debug("FileCache::GetXAttr : updating %s from local cache", options.Name)
-// 				value = string(buf[:size])
-// 			} else {
-// 				log.Debug("FileCache::GetXAttr : %s is locked, use storage attributes", options.Name)
-// 			}
-// 		} else { // Case 2 (file only in local cache) so use attributes from local cache
-// 			if !strings.Contains(localPath, fc.tmpPath) {
-// 				// Here if the path is going out of the temp directory then return ENOENT
-// 				exists = false
-// 			} else {
-// 				log.Debug("FileCache::GetXAttr : serving %s xattr from local cache", options.Name)
-// 				exists = true
-// 				value = string(buf[:size])
-// 			}
-// 		}
+	// To cover cases 2 and 3, grab the attributes from the local cache
+	localPath := filepath.Join(fc.tmpPath, options.Name)
+	// Extended attributes are specified as namespace.attribute
+	// For metadata, the attribute will be of the form "user.meta-key"
+	key := options.Attr
+	// Find size.
+	size, err := syscall.Getxattr(localPath, key, nil)
+	if err == nil || os.IsExist(err) {
+		buf := make([]byte, size)
+		// Read into buffer of that size.
+		size, err := syscall.Getxattr(localPath, key, buf)
+		if err != nil {
+			log.Err("FileCache::GetXAttr : Failed to get xattr %s of %s [%s]", options.Attr, options.Name, err.Error())
+			return "", &internal.ObjAttr{}, err
+		}
+		if exists { // Case 3 (file in storage and in local cache) so update the relevant attributes
+			// Return from local cache only if file is not under download or deletion
+			// If file is under download then taking size or mod time from it will be incorrect.
+			if !fc.fileLocks.Locked(options.Name) {
+				log.Debug("FileCache::GetXAttr : updating %s from local cache", options.Name)
+				value = string(buf[:size])
+			} else {
+				log.Debug("FileCache::GetXAttr : %s is locked, use storage attributes", options.Name)
+			}
+		} else { // Case 2 (file only in local cache) so use attributes from local cache
+			if !strings.Contains(localPath, fc.tmpPath) {
+				// Here if the path is going out of the temp directory then return ENOENT
+				exists = false
+			} else {
+				log.Debug("FileCache::GetXAttr : serving %s xattr from local cache", options.Name)
+				exists = true
+				value = string(buf[:size])
+			}
+		}
 
-// 	}
-// 	if !exists {
-// 		return "", &internal.ObjAttr{}, syscall.ENOENT
-// 	}
+	}
+	if !exists {
+		return "", &internal.ObjAttr{}, syscall.ENOENT
+	}
 
-// 	return value, attrs, nil
-// }
+	return value, attrs, nil
+}
+
+// SetXAttr: Set extended attributes
+func (fc *FileCache) SetXAttr(options internal.SetXAttrOptions) error {
+	log.Trace("FileCache::SetXAttr : %s attr %s value %s", options.Name, options.Attr, options.Value)
+	flock := fc.fileLocks.Get(options.Name)
+	flock.Lock()
+	defer flock.Unlock()
+
+	err := fc.NextComponent().SetXAttr(options)
+	err = fc.validateStorageError(options.Name, err, "SetXAttr", true)
+	if err != nil {
+		log.Err("FileCache::SetXAttr : %s failed to set extended attribute [%s]", options.Name, err.Error())
+		return err
+	}
+
+	// Update the extended attributes of the file in the local cache
+	localPath := filepath.Join(fc.tmpPath, options.Name)
+	_, err = os.Stat(localPath)
+	if err == nil || os.IsExist(err) {
+		fc.policy.CacheValid(localPath)
+
+		flags := 0
+		if options.Create {
+			flags |= XAttrCreate
+		}
+		if options.Replace {
+			flags |= XAttrReplace
+		}
+		err = syscall.Setxattr(localPath, options.Attr, []byte(options.Value), flags)
+		if err != nil {
+			log.Err("FileCache::SetXAttr : Failed to set extended attribute %s of file %s [%s]", options.Attr, options.Name, err.Error())
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ListXAttr: Consolidate attributes from storage and local cache
+func (fc *FileCache) ListXAttr(options internal.ListXAttrOptions) (*internal.ObjAttr, error) {
+	log.Trace("FileCache::ListXAttr : %s", options.Name)
+
+	// For get attr, there are three different path situations we have to potentially handle.
+	// 1. Path in storage but not in local cache
+	// 2. Path not in storage but in local cache (this could happen if we recently created the file [and are currently writing to it]) (also supports immutable containers)
+	// 3. Path in storage and in local cache (this could result in dirty properties on the service if we recently wrote to the file)
+
+	// To cover case 1, get attributes from storage
+	var exists bool
+	attrs, err := fc.NextComponent().ListXAttr(options)
+	if err != nil {
+		if err == syscall.ENOENT || os.IsNotExist(err) {
+			log.Debug("FileCache::ListXAttr : %s does not exist in storage", options.Name)
+			exists = false
+		} else {
+			log.Err("FileCache::ListXAttr : Failed to get xattr of %s [%s]", options.Name, err.Error())
+			return &internal.ObjAttr{}, err
+		}
+	} else {
+		// All directory operations are guaranteed to be synced with storage so they cannot be in a case 2 or 3 state.
+		if attrs.IsDir() {
+			return attrs, err
+		}
+		exists = true
+	}
+
+	// To cover cases 2 and 3, grab the attributes from the local cache
+	localPath := filepath.Join(fc.tmpPath, options.Name)
+	// Extended attributes are specified as namespace.attribute
+	// For metadata, the attribute will be of the form "user.meta-key"
+
+	// Find size.
+	size, err := syscall.Listxattr(localPath, nil)
+	if err == nil || os.IsExist(err) {
+		buf := make([]byte, size)
+		// Read into buffer of that size.
+		_, err := syscall.Listxattr(localPath, buf)
+		if err != nil {
+			log.Err("FileCache::ListXAttr : Failed to list xattr of %s [%s]", options.Name, err.Error())
+			return &internal.ObjAttr{}, err
+		}
+		if exists { // Case 3 (file in storage and in local cache) so update the relevant attributes
+			// Return from local cache only if file is not under download or deletion
+			// If file is under download then taking size or mod time from it will be incorrect.
+			if !fc.fileLocks.Locked(options.Name) {
+				log.Debug("FileCache::ListXAttr : updating %s from local cache", options.Name)
+				offset := 0
+				for i, b := range buf {
+					if b == 0 {
+						// Add each key to the metadata map. We don't care about the key so it's ok to overwrite it.
+						attrs.Metadata[string(buf[offset:i])] = ""
+						offset = i + 1
+					}
+				}
+
+			} else {
+				log.Debug("FileCache::ListXAttr : %s is locked, use storage attributes", options.Name)
+			}
+		} else { // Case 2 (file only in local cache) so use attributes from local cache
+			if !strings.Contains(localPath, fc.tmpPath) {
+				// Here if the path is going out of the temp directory then return ENOENT
+				exists = false
+			} else {
+				log.Debug("FileCache::ListXAttr : serving %s xattr from local cache", options.Name)
+				offset := 0
+				for i, b := range buf {
+					if b == 0 {
+						// Add each key to the metadata map. We don't care about the key so it's ok to overwrite it.
+						attrs.Metadata[string(buf[offset:i])] = ""
+						offset = i + 1
+					}
+				}
+				exists = true
+			}
+		}
+
+	}
+	if !exists {
+		return &internal.ObjAttr{}, syscall.ENOENT
+	}
+
+	return attrs, nil
+}
+
+// RemoveXAttr: Set extended attributes
+func (fc *FileCache) RemoveXAttr(options internal.RemoveXAttrOptions) error {
+	log.Trace("FileCache::SetXAttr : %s attr %s", options.Name, options.Attr)
+	flock := fc.fileLocks.Get(options.Name)
+	flock.Lock()
+	defer flock.Unlock()
+
+	err := fc.NextComponent().RemoveXAttr(options)
+	err = fc.validateStorageError(options.Name, err, "RemoveXAttr", true)
+	if err != nil {
+		log.Err("FileCache::RemoveXAttr : %s failed to remove extended attribute [%s]", options.Name, err.Error())
+		return err
+	}
+
+	// Update the extended attributes of the file in the local cache
+	localPath := filepath.Join(fc.tmpPath, options.Name)
+	_, err = os.Stat(localPath)
+	if err == nil || os.IsExist(err) {
+		fc.policy.CacheValid(localPath)
+
+		err = syscall.Removexattr(localPath, options.Attr)
+		if err != nil {
+			log.Err("FileCache::RemoveXAttr : Failed to remove extended attribute %s of file %s [%s]", options.Attr, options.Name, err.Error())
+			return err
+		}
+	}
+
+	return nil
+}
 
 // RenameFile: Invalidate the file in local cache.
 func (fc *FileCache) RenameFile(options internal.RenameFileOptions) error {

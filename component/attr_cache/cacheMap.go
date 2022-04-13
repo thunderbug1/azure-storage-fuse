@@ -69,42 +69,54 @@ func newAttrCacheItem(attr *internal.ObjAttr, exists bool, cachedAt time.Time) *
 	return item
 }
 
-func (value *attrCacheItem) valid() bool {
-	return value.attrFlag.IsSet(AttrFlagValid)
+func (item *attrCacheItem) valid() bool {
+	return item.attrFlag.IsSet(AttrFlagValid)
 }
 
-func (value *attrCacheItem) exists() bool {
-	return value.attrFlag.IsSet(AttrFlagExists)
+func (item *attrCacheItem) exists() bool {
+	return item.attrFlag.IsSet(AttrFlagExists)
 }
 
-func (value *attrCacheItem) markDeleted(deletedTime time.Time) {
-	value.attrFlag.Clear(AttrFlagExists)
-	value.attrFlag.Set(AttrFlagValid)
-	value.cachedAt = deletedTime
-	value.attr = &internal.ObjAttr{}
+func (item *attrCacheItem) markDeleted(deletedTime time.Time) {
+	item.attrFlag.Clear(AttrFlagExists)
+	item.attrFlag.Set(AttrFlagValid)
+	item.cachedAt = deletedTime
+	item.attr = &internal.ObjAttr{}
 }
 
-func (value *attrCacheItem) invalidate() {
-	value.attrFlag.Clear(AttrFlagValid)
-	value.attr = &internal.ObjAttr{}
+func (item *attrCacheItem) invalidate() {
+	item.attrFlag.Clear(AttrFlagValid)
+	item.attr = &internal.ObjAttr{}
 }
 
-func (value *attrCacheItem) getAttr() *internal.ObjAttr {
-	return value.attr
+func (item *attrCacheItem) getAttr() *internal.ObjAttr {
+	return item.attr
 }
 
-func (value *attrCacheItem) isDeleted() bool {
-	return !value.exists()
+func (item *attrCacheItem) isDeleted() bool {
+	return !item.exists()
 }
 
-func (value *attrCacheItem) setSize(size int64) {
-	value.attr.Mtime = time.Now()
-	value.attr.Size = size
-	value.cachedAt = time.Now()
+func (item *attrCacheItem) setSize(size int64) {
+	item.attr.Mtime = time.Now()
+	item.attr.Size = size
+	item.cachedAt = time.Now()
 }
 
-func (value *attrCacheItem) setMode(mode os.FileMode) {
-	value.attr.Mode = mode
-	value.attr.Ctime = time.Now()
-	value.cachedAt = time.Now()
+func (item *attrCacheItem) setMode(mode os.FileMode) {
+	item.attr.Mode = mode
+	item.attr.Ctime = time.Now()
+	item.cachedAt = time.Now()
+}
+
+func (item *attrCacheItem) setMetadata(key string, value string) {
+	item.attr.Metadata[key] = value
+	item.attr.Ctime = time.Now()
+	item.cachedAt = time.Now()
+}
+
+func (item *attrCacheItem) removeMetadata(key string) {
+	delete(item.attr.Metadata, key)
+	item.attr.Ctime = time.Now()
+	item.cachedAt = time.Now()
 }

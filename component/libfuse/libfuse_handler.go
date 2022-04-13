@@ -927,6 +927,8 @@ func libfuse_utimens(path *C.char, tv *C.timespec_t, fi *C.fuse_file_info_t) C.i
 	return 0
 }
 
+// Note: Anywhere where attr is accepted as user input, we expect user.meta- prepended.
+
 // libfuse_getxattr retrieves the value of an extended attribute of a file
 //export libfuse_getxattr
 func libfuse_getxattr(path *C.char, attr *C.char, value *C.char, size C.size_t) C.int {
@@ -1028,9 +1030,10 @@ func libfuse_listxattr(path *C.char, list *C.char, size C.size_t) C.int {
 		data := (*[1 << 30]byte)(unsafe.Pointer(list))
 		offset := 0
 		for key := range metadata {
-			copy(data[offset:offset+len(internal.MetadataXAttrPrefix)+len(key)], internal.MetadataXAttrPrefix+key)
-			data[offset+len(internal.MetadataXAttrPrefix)+len(key)] = 0
-			offset += len(internal.MetadataXAttrPrefix) + len(key) + 1
+			end := offset + len(internal.MetadataXAttrPrefix) + len(key)
+			copy(data[offset:end], internal.MetadataXAttrPrefix+key)
+			data[end] = 0
+			offset = end + 1
 		}
 		return C.int(s)
 	}

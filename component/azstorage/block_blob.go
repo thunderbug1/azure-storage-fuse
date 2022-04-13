@@ -878,15 +878,21 @@ func (bb *BlockBlob) GetXAttr(options internal.GetXAttrOptions) (value string, a
 
 func (bb *BlockBlob) SetXAttr(options internal.SetXAttrOptions) error {
 	log.Trace("BlockBlob::SetXAttr : name %s, attr %s, value %s, create %t, replace %t", options.Name, options.Attr, options.Value, options.Create, options.Replace)
-	attr, err := bb.GetAttr(options.Name)
-	if err != nil {
-		log.Err("BlockBlob::SetXAttr : Failed to get blob properties for %s (%s)", options.Name, err.Error())
-		return err
+	metadata := options.CachedMetadata
+	// Only fetch from storage if cached metadata hasnt been passed down
+	if metadata == nil {
+		attr, err := bb.GetAttr(options.Name)
+		if err != nil {
+			log.Err("BlockBlob::SetXAttr : Failed to get blob properties for %s (%s)", options.Name, err.Error())
+			return err
+		}
+		metadata = attr.Metadata
 	}
+
 	// Extended attributes are specified as namespace.attribute
 	// For metadata, the attribute will be of the form "user.meta-key"
 	metaAttr := strings.TrimPrefix(options.Attr, internal.MetadataXAttrPrefix)
-	_, found := attr.Metadata[metaAttr]
+	_, found := metadata[metaAttr]
 	if options.Create && found {
 		return syscall.EEXIST
 	}
@@ -895,9 +901,9 @@ func (bb *BlockBlob) SetXAttr(options internal.SetXAttrOptions) error {
 	}
 
 	// Set new metadata
-	attr.Metadata[metaAttr] = options.Value
+	metadata[metaAttr] = options.Value
 	blobURL := bb.Container.NewBlockBlobURL(filepath.Join(bb.Config.prefixPath, options.Name))
-	_, err = blobURL.SetMetadata(context.Background(), attr.Metadata, bb.blobAccCond, bb.blobCPKOpt)
+	_, err := blobURL.SetMetadata(context.Background(), metadata, bb.blobAccCond, bb.blobCPKOpt)
 	if err != nil {
 		e := storeBlobErrToErr(err)
 		if e == ErrFileNotFound {
@@ -922,23 +928,29 @@ func (bb *BlockBlob) ListXAttr(options internal.ListXAttrOptions) (attr *interna
 
 func (bb *BlockBlob) RemoveXAttr(options internal.RemoveXAttrOptions) error {
 	log.Trace("BlockBlob::RemoveXAttr : name %s, attr %s", options.Name, options.Attr)
-	attr, err := bb.GetAttr(options.Name)
-	if err != nil {
-		log.Err("BlockBlob::RemoveXAttr : Failed to get blob properties for %s (%s)", options.Name, err.Error())
-		return err
+
+	metadata := options.CachedMetadata
+	// Only fetch from storage if cached metadata hasnt been passed down
+	if metadata == nil {
+		attr, err := bb.GetAttr(options.Name)
+		if err != nil {
+			log.Err("BlockBlob::RemoveXAttr : Failed to get blob properties for %s (%s)", options.Name, err.Error())
+			return err
+		}
+		metadata = attr.Metadata
 	}
 	// Extended attributes are specified as namespace.attribute
 	// For metadata, the attribute will be of the form "user.meta-key"
 	metaAttr := strings.TrimPrefix(options.Attr, internal.MetadataXAttrPrefix)
-	_, found := attr.Metadata[metaAttr]
+	_, found := metadata[metaAttr]
 	if !found {
 		return syscall.ENODATA
 	}
 
 	// Set new metadata
-	delete(attr.Metadata, metaAttr)
+	delete(metadata, metaAttr)
 	blobURL := bb.Container.NewBlockBlobURL(filepath.Join(bb.Config.prefixPath, options.Name))
-	_, err = blobURL.SetMetadata(context.Background(), attr.Metadata, bb.blobAccCond, bb.blobCPKOpt)
+	_, err := blobURL.SetMetadata(context.Background(), metadata, bb.blobAccCond, bb.blobCPKOpt)
 	if err != nil {
 		e := storeBlobErrToErr(err)
 		if e == ErrFileNotFound {
