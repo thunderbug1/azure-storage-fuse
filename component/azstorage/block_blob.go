@@ -674,20 +674,25 @@ func (bb *BlockBlob) calculateBlockSize(name string, fileSize int64) (blockSize 
 	return blockSize, nil
 }
 
-func trackUpload(name string, bytesTransferred int64) {
-	data, isPresent := progressUploadMap[name]
-	if !isPresent {
-		progressUploadMap[name] = ProgressData{ctr: 1, bytesTransferred: bytesTransferred}
+func trackUpload(name string, bytesTransferred int64, uploadPtr *int64) {
+	if bytesTransferred >= (*uploadPtr)*100*1024*1024 {
+		(*uploadPtr)++
 		log.Debug("upload: Blob = %v, Bytes transferred = %v", name, bytesTransferred)
-	} else if bytesTransferred >= progressUploadMap[name].ctr*100*1024*1024 {
-		data.ctr += 1
-		data.bytesTransferred = bytesTransferred
-		progressUploadMap[name] = data
-		log.Debug("upload: Blob = %v, Bytes transferred = %v", name, bytesTransferred)
-	} else {
-		data.bytesTransferred = bytesTransferred
-		progressUploadMap[name] = data
 	}
+
+	// data, isPresent := progressUploadMap[name]
+	// if !isPresent {
+	// 	progressUploadMap[name] = ProgressData{ctr: 1, bytesTransferred: bytesTransferred}
+	// 	log.Debug("upload: Blob = %v, Bytes transferred = %v", name, bytesTransferred)
+	// } else if bytesTransferred >= progressUploadMap[name].ctr*100*1024*1024 {
+	// 	data.ctr += 1
+	// 	data.bytesTransferred = bytesTransferred
+	// 	progressUploadMap[name] = data
+	// 	log.Debug("upload: Blob = %v, Bytes transferred = %v", name, bytesTransferred)
+	// } else {
+	// 	data.bytesTransferred = bytesTransferred
+	// 	progressUploadMap[name] = data
+	// }
 }
 
 // WriteFromFile : Upload local file to blob
@@ -715,23 +720,30 @@ func (bb *BlockBlob) WriteFromFile(name string, metadata map[string]string, fi *
 		}
 	}
 
+	var uploadPtr *int64 = new(int64)
+	*uploadPtr = 1
+
 	_, err = azblob.UploadFileToBlockBlob(context.Background(), fi, blobURL, azblob.UploadToBlockBlobOptions{
 		BlockSize:      blockSize,
 		Parallelism:    bb.Config.maxConcurrency,
 		Metadata:       metadata,
 		BlobAccessTier: bb.Config.defaultTier,
 		Progress: func(bytesTransferred int64) {
-			trackUpload(name, bytesTransferred)
+			trackUpload(name, bytesTransferred, uploadPtr)
 		},
 		BlobHTTPHeaders: azblob.BlobHTTPHeaders{
 			ContentType: getContentType(name),
 		},
 	})
 
-	if _, isPresent := progressUploadMap[name]; isPresent && err == nil {
-		log.Debug("upload complete of blob %v, Bytes transferred = %v", name, progressUploadMap[name].bytesTransferred)
+	// if _, isPresent := progressUploadMap[name]; isPresent && err == nil {
+	// 	log.Debug("upload complete of blob %v, Bytes transferred = %v", name, progressUploadMap[name].bytesTransferred)
+	// }
+	// delete(progressUploadMap, name)
+
+	if err == nil {
+		log.Debug("upload complete of blob %v", name)
 	}
-	delete(progressUploadMap, name)
 
 	if err != nil {
 		serr := storeBlobErrToErr(err)
