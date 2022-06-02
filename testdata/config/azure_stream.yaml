@@ -41,3 +41,4 @@ azstorage:
   container: { 0 }
   max-retries: 10
   tier: hot
+  sdk-trace: { VERBOSE_LOG }
