@@ -125,7 +125,7 @@ steps:
             ${{ parameters.working_dir }}/blobfuse2 mount ${{ parameters.mount_dir }} --config-file=${{ parameters.config }}
             --default-working-dir=${{ parameters.working_dir }}
           displayName: 'E2E Test: Mount with Key Credential Configuration'
-          timeoutInMinutes: 3
+          timeoutInMinutes: 20
           continueOnError: false
 
   - ${{ if eq(parameters.test_sas_credential, true) }}:
@@ -143,7 +143,7 @@ steps:
             ${{ parameters.working_dir }}/blobfuse2 mount ${{ parameters.mount_dir }} --config-file=${{ parameters.sas_credential_config }}
             --default-working-dir=${{ parameters.working_dir }}
           displayName: 'E2E Test: Mount with SAS Credential Configuration'
-          timeoutInMinutes: 3
+          timeoutInMinutes: 20
           continueOnError: false
 
   - ${{ if eq(parameters.test_spn_credential, true) }}:
@@ -161,7 +161,7 @@ steps:
             ${{ parameters.working_dir }}/blobfuse2 mount ${{ parameters.mount_dir }} --config-file=${{ parameters.spn_credential_config }}
             --default-working-dir=${{ parameters.working_dir }}
           displayName: 'E2E Test: Mount with SPN Credential Configuration'
-          timeoutInMinutes: 3
+          timeoutInMinutes: 20
           continueOnError: false
       
 #--------------------------------------- Tests: End to end tests with different File Cache configurations ------------------------------------------

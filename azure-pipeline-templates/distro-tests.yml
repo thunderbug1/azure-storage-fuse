@@ -116,7 +116,7 @@ steps:
         script: |
           ${{ parameters.working_dir }}/blobfuse2 mount ${{ parameters.mount_dir }} --config-file=${{ parameters.config_path }}
         displayName: 'E2E TEST: Mount container'
-        timeoutInMinutes: 3
+        timeoutInMinutes: 20
         continueOnError: false
 
   - template: 'cleanup.yml'
@@ -161,7 +161,7 @@ steps:
         script: |
           ${{ parameters.working_dir }}/blobfuse2 mount ${{ parameters.mount_dir }} --config-file=${{ parameters.config_path }}
         displayName: 'E2E TEST: Mount container'
-        timeoutInMinutes: 3
+        timeoutInMinutes: 20
         continueOnError: false
 
   - template: 'cleanup.yml'

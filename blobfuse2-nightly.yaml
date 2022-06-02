@@ -327,7 +327,7 @@ jobs:
               script: |
                 $(WORK_DIR)/blobfuse2 mount $(MOUNT_DIR) --config-file=$(BLOBFUSE2_CFG) --default-working-dir=$(WORK_DIR)
               displayName: 'E2E TEST: Mount'
-              timeoutInMinutes: 3
+              timeoutInMinutes: 20
               continueOnError: false
 
         # --------------------------------------------------
@@ -358,7 +358,7 @@ jobs:
               script: |
                 $(WORK_DIR)/blobfuse2 mount $(MOUNT_DIR) --config-file=$(BLOBFUSE2_ADLS_CFG) --default-working-dir=$(WORK_DIR)
               displayName: 'FeatureTest ADLS: Mount'
-              timeoutInMinutes: 3
+              timeoutInMinutes: 20
               continueOnError: false
         # ------------------------------------------------------------
         # Auth Tests
