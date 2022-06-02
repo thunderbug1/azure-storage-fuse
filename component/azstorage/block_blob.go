@@ -531,18 +531,22 @@ func (bb *BlockBlob) List(prefix string, marker *string, count int32) ([]*intern
 	return blobList, listBlob.NextMarker.Val, nil
 }
 
-func trackProgress(name string, bytesTransferred int64, count int64, op string, progressMap map[string]int64) {
-	_, isPresent := progressMap[name]
-	if !isPresent {
-		progressMap[name] = 1
-		log.Debug("%v: Blob = %v, Bytes transferred = %v, Size = %v", op, name, bytesTransferred, count)
-	} else if bytesTransferred >= progressMap[name]*100*1024*1024 || bytesTransferred == count {
-		progressMap[name]++
-		log.Debug("%v: Blob = %v, Bytes transferred = %v, Size = %v", op, name, bytesTransferred, count)
-		if bytesTransferred == count {
-			log.Debug("%v complete of blob %v", op, name)
-		}
+func trackDownload(name string, bytesTransferred int64, count int64, countPtr *int64) {
+	if bytesTransferred >= (*countPtr)*100*1024*1024 || bytesTransferred == count {
+		(*countPtr)++
+		log.Debug("download: Blob = %v, Bytes transferred = %v, Size = %v", name, bytesTransferred, count)
 	}
+	// _, isPresent := progressDownloadMap[name]
+	// if !isPresent {
+	// 	progressDownloadMap[name] = 1
+	// 	log.Debug("download: Blob = %v, Bytes transferred = %v, Size = %v", name, bytesTransferred, count)
+	// } else if bytesTransferred >= progressDownloadMap[name]*100*1024*1024 || bytesTransferred == count {
+	// 	progressDownloadMap[name]++
+	// 	log.Debug("download: Blob = %v, Bytes transferred = %v, Size = %v", name, bytesTransferred, count)
+	// 	if bytesTransferred == count {
+	// 		log.Debug("download complete of blob %v", name)
+	// 	}
+	// }
 }
 
 // ReadToFile : Download a blob to a local file
@@ -552,14 +556,17 @@ func (bb *BlockBlob) ReadToFile(name string, offset int64, count int64, fi *os.F
 
 	blobURL := bb.Container.NewBlobURL(filepath.Join(bb.Config.prefixPath, name))
 
+	var countPtr *int64 = new(int64)
+	*countPtr = 1
+
 	bb.downloadOptions.Progress = func(bytesTransferred int64) {
-		trackProgress(name, bytesTransferred, count, "download", progressDownloadMap)
+		trackDownload(name, bytesTransferred, count, countPtr)
 	}
 
 	defer log.TimeTrack(time.Now(), "BlockBlob::ReadToFile", name)
 	err = azblob.DownloadBlobToFile(context.Background(), blobURL, offset, count, fi, bb.downloadOptions)
 
-	delete(progressDownloadMap, name)
+	log.Debug("download complete of blob %v", name)
 
 	if err != nil {
 		e := storeBlobErrToErr(err)
