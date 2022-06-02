@@ -159,6 +159,7 @@ func (suite *dataValidationTestSuite) TestLargeFileData() {
 	// delete the cache directory
 	suite.dataValidationTestCleanup([]string{suite.testCachePath})
 
+	time.Sleep(time.Second * 4)
 	suite.validateData(localFilePath, remoteFilePath)
 
 	suite.dataValidationTestCleanup([]string{localFilePath, remoteFilePath, suite.testCachePath})
@@ -233,6 +234,9 @@ func validateMultipleFilesData(jobs <-chan int, results chan<- string, fileSize 
 
 		suite.copyToMountDir(localFilePath, remoteFilePath)
 		suite.dataValidationTestCleanup([]string{suite.testCachePath + "/" + fileName})
+		if fileSize == "large" || fileSize == "huge" {
+			time.Sleep(time.Second * 4)
+		}
 		suite.validateData(localFilePath, remoteFilePath)
 
 		suite.dataValidationTestCleanup([]string{localFilePath, suite.testCachePath + "/" + fileName})
