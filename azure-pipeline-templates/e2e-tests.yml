@@ -61,7 +61,7 @@ steps:
     inputs:
       pathToPublish: blobfuse2-logs.txt
       artifactName: ${{ parameters.artifact_name }}
-    condition: ${{ parameters.verbose_log }}
+    condition: true
     
   - script: |
       tail -n 200 blobfuse2-logs.txt
