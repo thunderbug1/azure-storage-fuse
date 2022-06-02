@@ -166,6 +166,7 @@ func (suite *dataValidationTestSuite) TestLargeFileData() {
 
 // negative test case for data validation where the local file is updated
 func (suite *dataValidationTestSuite) TestDataValidationNegative() {
+	var cliOut []byte
 	fileName := "updated_data.txt"
 	localFilePath := suite.testLocalPath + "/" + fileName
 	remoteFilePath := suite.testMntPath + "/" + fileName
@@ -193,8 +194,13 @@ func (suite *dataValidationTestSuite) TestDataValidationNegative() {
 	suite.Equal(nil, err)
 
 	// compare local file and mounted files
-	diffCmd := exec.Command("diff", localFilePath, remoteFilePath)
-	cliOut, err := diffCmd.Output()
+	for i := 0; i < 4; i++ {
+		diffCmd := exec.Command("diff", localFilePath, remoteFilePath)
+		cliOut, err = diffCmd.Output()
+		if err == nil {
+			break
+		}
+	}
 	fmt.Println("Negative test case where files should differ")
 	fmt.Println(string(cliOut))
 	suite.NotEqual(0, len(cliOut))
