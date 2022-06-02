@@ -39,4 +39,5 @@ azstorage:
   account-key: { NIGHTLY_STO_ACC_KEY }
   mode: key
   container: { 0 }
+  max-retries: 10
   tier: hot

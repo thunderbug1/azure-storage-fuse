@@ -32,6 +32,7 @@ azstorage:
   use-http: false
   account-name: { NIGHTLY_STO_ACC_NAME }
   account-key: { NIGHTLY_STO_ACC_KEY }
+  max-retries: 10
   mode: key
   container: { 0 }
   tier: hot

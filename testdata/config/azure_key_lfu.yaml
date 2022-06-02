@@ -28,6 +28,7 @@ azstorage:
   type: { ACCOUNT_TYPE }
   endpoint: { ACCOUNT_ENDPOINT }
   use-http: false
+  max-retries: 10
   account-name: { NIGHTLY_STO_ACC_NAME }
   account-key: { NIGHTLY_STO_ACC_KEY }
   mode: key
