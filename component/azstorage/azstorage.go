@@ -57,6 +57,14 @@ type AzStorage struct {
 	listBlocked bool
 }
 
+type ProgressData struct {
+	ctr              int64
+	bytesTransferred int64
+}
+
+var progressDownloadMap map[string]int64
+var progressUploadMap map[string]ProgressData
+
 const compName = "azstorage"
 
 //Verification to check satisfaction criteria with Component Interface
@@ -466,6 +474,9 @@ func NewazstorageComponent() internal.Component {
 func init() {
 	internal.AddComponent(compName, NewazstorageComponent)
 	RegisterEnvVariables()
+
+	progressDownloadMap = make(map[string]int64)
+	progressUploadMap = make(map[string]ProgressData)
 
 	containerNameFlag := config.AddStringFlag("container-name", "", "Configures the name of the container to be mounted")
 	config.BindPFlag(compName+".container", containerNameFlag)
