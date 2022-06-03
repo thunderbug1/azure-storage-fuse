@@ -45,7 +45,7 @@ parameters:
   - name: verbose_log
     displayName: 'Verbose Log'
     type: boolean
-    default: false
+    default: true
 
 jobs:
   # Ubuntu based test suite
