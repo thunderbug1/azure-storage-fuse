@@ -89,125 +89,125 @@ func (suite *dataValidationTestSuite) validateData(localFilePath string, remoteF
 
 // -------------- Data Validation Tests -------------------
 
-// data validation for small sized files
-func (suite *dataValidationTestSuite) TestSmallFileData() {
-	fileName := "small_data.txt"
-	localFilePath := suite.testLocalPath + "/" + fileName
-	remoteFilePath := suite.testMntPath + "/" + fileName
+// // data validation for small sized files
+// func (suite *dataValidationTestSuite) TestSmallFileData() {
+// 	fileName := "small_data.txt"
+// 	localFilePath := suite.testLocalPath + "/" + fileName
+// 	remoteFilePath := suite.testMntPath + "/" + fileName
 
-	// create the file in local directory
-	srcFile, err := os.OpenFile(localFilePath, os.O_CREATE, 0777)
-	suite.Equal(nil, err)
-	srcFile.Close()
+// 	// create the file in local directory
+// 	srcFile, err := os.OpenFile(localFilePath, os.O_CREATE, 0777)
+// 	suite.Equal(nil, err)
+// 	srcFile.Close()
 
-	// write to file in the local directory
-	err = ioutil.WriteFile(localFilePath, minBuff, 0777)
-	suite.Equal(nil, err)
+// 	// write to file in the local directory
+// 	err = ioutil.WriteFile(localFilePath, minBuff, 0777)
+// 	suite.Equal(nil, err)
 
-	suite.copyToMountDir(localFilePath, remoteFilePath)
+// 	suite.copyToMountDir(localFilePath, remoteFilePath)
 
-	// delete the cache directory
-	suite.dataValidationTestCleanup([]string{suite.testCachePath})
+// 	// delete the cache directory
+// 	suite.dataValidationTestCleanup([]string{suite.testCachePath})
 
-	suite.validateData(localFilePath, remoteFilePath)
+// 	suite.validateData(localFilePath, remoteFilePath)
 
-	suite.dataValidationTestCleanup([]string{localFilePath, remoteFilePath, suite.testCachePath})
-}
+// 	suite.dataValidationTestCleanup([]string{localFilePath, remoteFilePath, suite.testCachePath})
+// }
 
-// data validation for medium sized files
-func (suite *dataValidationTestSuite) TestMediumFileData() {
-	fileName := "medium_data.txt"
-	localFilePath := suite.testLocalPath + "/" + fileName
-	remoteFilePath := suite.testMntPath + "/" + fileName
+// // data validation for medium sized files
+// func (suite *dataValidationTestSuite) TestMediumFileData() {
+// 	fileName := "medium_data.txt"
+// 	localFilePath := suite.testLocalPath + "/" + fileName
+// 	remoteFilePath := suite.testMntPath + "/" + fileName
 
-	// create the file in local directory
-	srcFile, err := os.OpenFile(localFilePath, os.O_CREATE, 0777)
-	suite.Equal(nil, err)
-	srcFile.Close()
+// 	// create the file in local directory
+// 	srcFile, err := os.OpenFile(localFilePath, os.O_CREATE, 0777)
+// 	suite.Equal(nil, err)
+// 	srcFile.Close()
 
-	// write to file in the local directory
-	err = ioutil.WriteFile(localFilePath, medBuff, 0777)
-	suite.Equal(nil, err)
+// 	// write to file in the local directory
+// 	err = ioutil.WriteFile(localFilePath, medBuff, 0777)
+// 	suite.Equal(nil, err)
 
-	suite.copyToMountDir(localFilePath, remoteFilePath)
+// 	suite.copyToMountDir(localFilePath, remoteFilePath)
 
-	// delete the cache directory
-	suite.dataValidationTestCleanup([]string{suite.testCachePath})
+// 	// delete the cache directory
+// 	suite.dataValidationTestCleanup([]string{suite.testCachePath})
 
-	suite.validateData(localFilePath, remoteFilePath)
+// 	suite.validateData(localFilePath, remoteFilePath)
 
-	suite.dataValidationTestCleanup([]string{localFilePath, remoteFilePath, suite.testCachePath})
-}
+// 	suite.dataValidationTestCleanup([]string{localFilePath, remoteFilePath, suite.testCachePath})
+// }
 
-// data validation for large sized files
-func (suite *dataValidationTestSuite) TestLargeFileData() {
-	fileName := "large_data.txt"
-	localFilePath := suite.testLocalPath + "/" + fileName
-	remoteFilePath := suite.testMntPath + "/" + fileName
+// // data validation for large sized files
+// func (suite *dataValidationTestSuite) TestLargeFileData() {
+// 	fileName := "large_data.txt"
+// 	localFilePath := suite.testLocalPath + "/" + fileName
+// 	remoteFilePath := suite.testMntPath + "/" + fileName
 
-	// create the file in local directory
-	srcFile, err := os.OpenFile(localFilePath, os.O_CREATE, 0777)
-	suite.Equal(nil, err)
-	srcFile.Close()
+// 	// create the file in local directory
+// 	srcFile, err := os.OpenFile(localFilePath, os.O_CREATE, 0777)
+// 	suite.Equal(nil, err)
+// 	srcFile.Close()
 
-	// write to file in the local directory
-	err = ioutil.WriteFile(localFilePath, largeBuff, 0777)
-	suite.Equal(nil, err)
+// 	// write to file in the local directory
+// 	err = ioutil.WriteFile(localFilePath, largeBuff, 0777)
+// 	suite.Equal(nil, err)
 
-	suite.copyToMountDir(localFilePath, remoteFilePath)
+// 	suite.copyToMountDir(localFilePath, remoteFilePath)
 
-	// delete the cache directory
-	suite.dataValidationTestCleanup([]string{suite.testCachePath})
+// 	// delete the cache directory
+// 	suite.dataValidationTestCleanup([]string{suite.testCachePath})
 
-	suite.validateData(localFilePath, remoteFilePath)
+// 	suite.validateData(localFilePath, remoteFilePath)
 
-	suite.dataValidationTestCleanup([]string{localFilePath, remoteFilePath, suite.testCachePath})
-}
+// 	suite.dataValidationTestCleanup([]string{localFilePath, remoteFilePath, suite.testCachePath})
+// }
 
-// negative test case for data validation where the local file is updated
-func (suite *dataValidationTestSuite) TestDataValidationNegative() {
-	var cliOut []byte
-	fileName := "updated_data.txt"
-	localFilePath := suite.testLocalPath + "/" + fileName
-	remoteFilePath := suite.testMntPath + "/" + fileName
+// // negative test case for data validation where the local file is updated
+// func (suite *dataValidationTestSuite) TestDataValidationNegative() {
+// 	var cliOut []byte
+// 	fileName := "updated_data.txt"
+// 	localFilePath := suite.testLocalPath + "/" + fileName
+// 	remoteFilePath := suite.testMntPath + "/" + fileName
 
-	// create the file in local directory
-	srcFile, err := os.OpenFile(localFilePath, os.O_CREATE, 0777)
-	suite.Equal(nil, err)
-	srcFile.Close()
+// 	// create the file in local directory
+// 	srcFile, err := os.OpenFile(localFilePath, os.O_CREATE, 0777)
+// 	suite.Equal(nil, err)
+// 	srcFile.Close()
 
-	// write to file in the local directory
-	err = ioutil.WriteFile(localFilePath, minBuff, 0777)
-	suite.Equal(nil, err)
+// 	// write to file in the local directory
+// 	err = ioutil.WriteFile(localFilePath, minBuff, 0777)
+// 	suite.Equal(nil, err)
 
-	// copy local file to mounted directory
-	suite.copyToMountDir(localFilePath, remoteFilePath)
+// 	// copy local file to mounted directory
+// 	suite.copyToMountDir(localFilePath, remoteFilePath)
 
-	// delete the cache directory
-	suite.dataValidationTestCleanup([]string{suite.testCachePath})
+// 	// delete the cache directory
+// 	suite.dataValidationTestCleanup([]string{suite.testCachePath})
 
-	// update local file
-	srcFile, err = os.OpenFile(localFilePath, os.O_APPEND|os.O_WRONLY, 0777)
-	suite.Equal(nil, err)
-	_, err = srcFile.WriteString("Added text")
-	srcFile.Close()
-	suite.Equal(nil, err)
+// 	// update local file
+// 	srcFile, err = os.OpenFile(localFilePath, os.O_APPEND|os.O_WRONLY, 0777)
+// 	suite.Equal(nil, err)
+// 	_, err = srcFile.WriteString("Added text")
+// 	srcFile.Close()
+// 	suite.Equal(nil, err)
 
-	// compare local file and mounted files
-	for i := 0; i < 4; i++ {
-		diffCmd := exec.Command("diff", localFilePath, remoteFilePath)
-		cliOut, err = diffCmd.Output()
-		if err == nil {
-			break
-		}
-	}
-	fmt.Println("Negative test case where files should differ")
-	fmt.Println(string(cliOut))
-	suite.NotEqual(0, len(cliOut))
-	suite.NotEqual(nil, err)
+// 	// compare local file and mounted files
+// 	for i := 0; i < 4; i++ {
+// 		diffCmd := exec.Command("diff", localFilePath, remoteFilePath)
+// 		cliOut, err = diffCmd.Output()
+// 		if err == nil {
+// 			break
+// 		}
+// 	}
+// 	fmt.Println("Negative test case where files should differ")
+// 	fmt.Println(string(cliOut))
+// 	suite.NotEqual(0, len(cliOut))
+// 	suite.NotEqual(nil, err)
 
-	suite.dataValidationTestCleanup([]string{localFilePath, remoteFilePath, suite.testCachePath})
-}
+// 	suite.dataValidationTestCleanup([]string{localFilePath, remoteFilePath, suite.testCachePath})
+// }
 
 func validateMultipleFilesData(jobs <-chan int, results chan<- string, fileSize string, suite *dataValidationTestSuite) {
 	for i := range jobs {
@@ -269,22 +269,22 @@ func createThreadPool(noOfFiles int, noOfWorkers int, fileSize string, suite *da
 	suite.dataValidationTestCleanup([]string{suite.testCachePath})
 }
 
-func (suite *dataValidationTestSuite) TestMultipleSmallFiles() {
-	noOfFiles := 16
-	noOfWorkers := 4
-	createThreadPool(noOfFiles, noOfWorkers, "small", suite)
-}
+// func (suite *dataValidationTestSuite) TestMultipleSmallFiles() {
+// 	noOfFiles := 16
+// 	noOfWorkers := 4
+// 	createThreadPool(noOfFiles, noOfWorkers, "small", suite)
+// }
 
-func (suite *dataValidationTestSuite) TestMultipleMediumFiles() {
-	if strings.Contains(strings.ToUpper(distro), "RHEL") {
-		fmt.Println("Skipping this test case for RHEL")
-		return
-	}
+// func (suite *dataValidationTestSuite) TestMultipleMediumFiles() {
+// 	if strings.Contains(strings.ToUpper(distro), "RHEL") {
+// 		fmt.Println("Skipping this test case for RHEL")
+// 		return
+// 	}
 
-	noOfFiles := 8
-	noOfWorkers := 4
-	createThreadPool(noOfFiles, noOfWorkers, "medium", suite)
-}
+// 	noOfFiles := 8
+// 	noOfWorkers := 4
+// 	createThreadPool(noOfFiles, noOfWorkers, "medium", suite)
+// }
 
 func (suite *dataValidationTestSuite) TestMultipleLargeFiles() {
 	if strings.Contains(strings.ToUpper(distro), "RHEL") {
@@ -292,21 +292,21 @@ func (suite *dataValidationTestSuite) TestMultipleLargeFiles() {
 		return
 	}
 
-	noOfFiles := 4
+	noOfFiles := 1
 	noOfWorkers := 2
 	createThreadPool(noOfFiles, noOfWorkers, "large", suite)
 }
 
-func (suite *dataValidationTestSuite) TestMultipleHugeFiles() {
-	if strings.ToLower(quickTest) == "true" {
-		fmt.Println("Quick test is enabled. Skipping this test case")
-		return
-	}
+// func (suite *dataValidationTestSuite) TestMultipleHugeFiles() {
+// 	if strings.ToLower(quickTest) == "true" {
+// 		fmt.Println("Quick test is enabled. Skipping this test case")
+// 		return
+// 	}
 
-	noOfFiles := 2
-	noOfWorkers := 2
-	createThreadPool(noOfFiles, noOfWorkers, "huge", suite)
-}
+// 	noOfFiles := 2
+// 	noOfWorkers := 2
+// 	createThreadPool(noOfFiles, noOfWorkers, "huge", suite)
+// }
 
 // -------------- Main Method -------------------
 func TestDataValidationTestSuite(t *testing.T) {
