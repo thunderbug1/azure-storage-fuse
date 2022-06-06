@@ -55,27 +55,27 @@ func TestGenerateConfig(t *testing.T) {
 
 func (suite *typesTestSuite) TestBinarySearch() {
 	blocksList := []*Block{
-		{StartIndex: 0, EndIndex: 4},
-		{StartIndex: 4, EndIndex: 7},
-		{StartIndex: 7, EndIndex: 12},
+		{StartIndex: 0, EndIndex: 4, Size: 4},
+		{StartIndex: 4, EndIndex: 7, Size: 3},
+		{StartIndex: 7, EndIndex: 12, Size: 5},
 	}
 	bol := BlockOffsetList{
 		BlockList: blocksList,
 	}
-	found, startingIndex := bol.BinarySearch(5)
+	found, startingIndex := bol.binarySearch(5)
 	suite.assert.Equal(found, true)
 	suite.assert.Equal(startingIndex, 1)
 
-	found, startingIndex = bol.BinarySearch(20)
+	found, startingIndex = bol.binarySearch(20)
 	suite.assert.Equal(found, false)
 	suite.assert.Equal(startingIndex, 3)
 }
 
 func (suite *typesTestSuite) TestFindBlocksToModify() {
 	blocksList := []*Block{
-		{StartIndex: 0, EndIndex: 4},
-		{StartIndex: 4, EndIndex: 7},
-		{StartIndex: 7, EndIndex: 12},
+		{StartIndex: 0, EndIndex: 4, Size: 4},
+		{StartIndex: 4, EndIndex: 7, Size: 3},
+		{StartIndex: 7, EndIndex: 12, Size: 5},
 	}
 	bol := BlockOffsetList{
 		BlockList: blocksList,
