@@ -81,7 +81,7 @@ stages:
           # install dependencies required for compiling blobfuse
           - script: |
               sudo apt-get update --fix-missing
-              sudo apt-get install ruby-dev build-essential $(fuselib) -y
+              sudo apt-get install ruby-dev build-essential $(fuselib) rpm -y
               sudo gem install fpm -V
             displayName: "Installing Dependencies"
 
@@ -118,7 +118,16 @@ stages:
               mv ./blobfuse2*.deb ./blobfuse2-`./pkgDir/usr/bin/blobfuse2 --version | cut -d " " -f 3`-$(container_image)-x86-64.deb
               cp ./blobfuse2*.deb $(Build.ArtifactStagingDirectory)
             workingDirectory: $(root_dir)
-            displayName: 'Make Package'
+            displayName: 'Make Package deb'
+
+          - script: |
+              fpm -s dir -t rpm -n blobfuse2 -C pkgDir/ -v `./pkgDir/usr/bin/blobfuse2 --version | cut -d " " -f 3` -d fuse \
+              --maintainer "Blobfuse v-Team <blobfusevteam@microsoft.com>" --url "https://github.com/Azure/azure-storage-fuse" \
+              --description "An user-space filesystem for interacting with Azure Storage" 
+              mv ./blobfuse2*.rpm ./blobfuse2-`./pkgDir/usr/bin/blobfuse2 --version | cut -d " " -f 3`-$(container_image)-x86-64.rpm
+              cp ./blobfuse2*.rpm $(Build.ArtifactStagingDirectory)
+            workingDirectory: $(root_dir)
+            displayName: 'Make Package rpm'
           
           # publishing the artifacts generated
           - task: PublishBuildArtifacts@1
