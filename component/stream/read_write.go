@@ -49,6 +49,7 @@ import (
 type ReadWriteCache struct {
 	*Stream
 	StreamConnection
+	locks common.KeyedMutex
 }
 
 func (rw *ReadWriteCache) Configure(conf StreamOptions) error {
@@ -80,6 +81,9 @@ func (rw *ReadWriteCache) CreateFile(options internal.CreateFileOptions) (*handl
 
 func (rw *ReadWriteCache) OpenFile(options internal.OpenFileOptions) (*handlemap.Handle, error) {
 	log.Trace("Stream::OpenFile : name=%s, flags=%d, mode=%s", options.Name, options.Flags, options.Mode)
+	mtx := rw.locks.GetLock(options.Name)
+	mtx.Lock()
+	defer mtx.Unlock()
 	handle, err := rw.NextComponent().OpenFile(options)
 	if err != nil {
 		log.Err("Stream::OpenFile : error failed to open file %s [%s]", options.Name, err.Error())
@@ -209,6 +213,9 @@ func (rw *ReadWriteCache) RenameFile(options internal.RenameFileOptions) error {
 
 func (rw *ReadWriteCache) CloseFile(options internal.CloseFileOptions) error {
 	log.Trace("Stream::CloseFile : name=%s, handle=%d", options.Handle.Path, options.Handle.ID)
+	mtx := rw.locks.GetLock(options.Handle.Path)
+	mtx.Lock()
+	defer mtx.Unlock()
 	if !rw.StreamOnly && !options.Handle.CacheObj.StreamOnly {
 		err := rw.purge(options.Handle, -1, true)
 		if err != nil {
