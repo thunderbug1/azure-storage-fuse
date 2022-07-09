@@ -181,7 +181,7 @@ func (suite *streamTestSuite) TestStreamOnlyTruncateFile() {
 	suite.assert.Equal(suite.stream.StreamOnly, true)
 }
 
-// ============================================================================ read tests ====================================================
+// ==================================== read tests ====================================================
 // test small file caching
 func (suite *streamTestSuite) TestCacheSmallFileOnOpen() {
 	defer suite.cleanupTest()
