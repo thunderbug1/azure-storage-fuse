@@ -96,7 +96,7 @@ func (rw *ReadWriteCache) OpenFile(options internal.OpenFileOptions) (*handlemap
 }
 
 func (rw *ReadWriteCache) ReadInBuffer(options internal.ReadInBufferOptions) (int, error) {
-	// log.Trace("Stream::ReadInBuffer : name=%s, handle=%d, offset=%d", options.Handle.Path, options.Handle.ID, options.Offset)
+	log.Trace("Stream::ReadInBuffer : name=%s, handle=%d, offset=%d", options.Handle.Path, options.Handle.ID, options.Offset)
 	if !rw.StreamOnly && options.Handle.CacheObj.StreamOnly {
 		err := rw.createHandleCache(options.Handle)
 		if err != nil {
@@ -124,7 +124,7 @@ func (rw *ReadWriteCache) ReadInBuffer(options internal.ReadInBufferOptions) (in
 }
 
 func (rw *ReadWriteCache) WriteFile(options internal.WriteFileOptions) (int, error) {
-	// log.Trace("Stream::WriteFile : name=%s, handle=%d, offset=%d", options.Handle.Path, options.Handle.ID, options.Offset)
+	log.Trace("Stream::WriteFile : name=%s, handle=%d, offset=%d", options.Handle.Path, options.Handle.ID, options.Offset)
 	if !rw.StreamOnly && options.Handle.CacheObj.StreamOnly {
 		err := rw.createHandleCache(options.Handle)
 		if err != nil {
@@ -145,6 +145,7 @@ func (rw *ReadWriteCache) WriteFile(options internal.WriteFileOptions) (int, err
 	if err != nil {
 		log.Err("Stream::WriteFile : error failed to write data to %s: [%s]", options.Handle.Path, err.Error())
 	}
+	options.Handle.Flags.Set(handlemap.HandleFlagDirty)
 	return written, err
 }
 
@@ -209,6 +210,27 @@ func (rw *ReadWriteCache) RenameFile(options internal.RenameFileOptions) error {
 
 func (rw *ReadWriteCache) FlushFile(options internal.FlushFileOptions) error {
 	log.Trace("Stream::FlushFile : name=%s, handle=%d", options.Handle.Path, options.Handle.ID)
+	if !rw.StreamOnly {
+		var err error
+		handleMap := handlemap.GetHandles()
+		handleMap.Range(func(key, value interface{}) bool {
+			handle := value.(*handlemap.Handle)
+			if handle.CacheObj != nil && !handle.CacheObj.StreamOnly {
+				if handle.Path == options.Handle.Path && handle != options.Handle {
+					err := rw.purge(handle, options.Handle.Size, false)
+					if err != nil {
+						log.Err("Stream::RenameFile : failed to flush and purge handle cache %s [%s]", handle.Path, err.Error())
+						return false
+					}
+				}
+			}
+			return true
+		})
+		if err != nil {
+			return err
+		}
+	}
+
 	if !rw.StreamOnly && !options.Handle.CacheObj.StreamOnly {
 		err := rw.purge(options.Handle, -1, true)
 		if err != nil {

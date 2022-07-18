@@ -734,11 +734,6 @@ func (bb *BlockBlob) GetFileBlockOffsets(name string) (*common.BlockOffsetList, 
 		log.Err("BlockBlob::GetFileBlockOffsets : Failed to get block list %s ", name, err.Error())
 		return &common.BlockOffsetList{}, err
 	}
-	// if block list empty its a small file
-	if len(blockList.BlockList) == 0 {
-		blockList.Flags.Set(common.SmallFile)
-		return &blockList, nil
-	}
 	for _, block := range storageBlockList.CommittedBlocks {
 		blk := &common.Block{
 			Id:         block.Name,
@@ -747,6 +742,11 @@ func (bb *BlockBlob) GetFileBlockOffsets(name string) (*common.BlockOffsetList, 
 		}
 		blockOffset += block.Size
 		blockList.BlockList = append(blockList.BlockList, blk)
+	}
+	// if block list empty its a small file
+	if len(blockList.BlockList) == 0 {
+		blockList.Flags.Set(common.SmallFile)
+		return &blockList, nil
 	}
 	// blockList.Etag = storageBlockList.ETag()
 	blockList.BlockIdLength = common.GetIdLength(blockList.BlockList[0].Id)
