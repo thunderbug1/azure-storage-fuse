@@ -442,6 +442,18 @@ func (ac *AttrCache) SyncDir(options internal.SyncDirOptions) error {
 	return err
 }
 
+func (ac *AttrCache) FlushFile(options internal.FlushFileOptions) error {
+	log.Trace("AttrCache::FlushFile : %s", options.Handle.Path)
+	err := ac.NextComponent().FlushFile(options)
+	if err == nil {
+		ac.cacheLock.RLock()
+		defer ac.cacheLock.RUnlock()
+
+		ac.invalidatePath(options.Handle.Path)
+	}
+	return err
+}
+
 // GetAttr : Try to serve the request from the attribute cache, otherwise cache attributes of the path returned by next component
 func (ac *AttrCache) GetAttr(options internal.GetAttrOptions) (*internal.ObjAttr, error) {
 	log.Trace("AttrCache::GetAttr : %s", options.Name)
