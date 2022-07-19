@@ -96,7 +96,7 @@ func (rw *ReadWriteCache) OpenFile(options internal.OpenFileOptions) (*handlemap
 }
 
 func (rw *ReadWriteCache) ReadInBuffer(options internal.ReadInBufferOptions) (int, error) {
-	log.Trace("Stream::ReadInBuffer : name=%s, handle=%d, offset=%d", options.Handle.Path, options.Handle.ID, options.Offset)
+	// log.Trace("Stream::ReadInBuffer : name=%s, handle=%d, offset=%d", options.Handle.Path, options.Handle.ID, options.Offset)
 	if !rw.StreamOnly && options.Handle.CacheObj.StreamOnly {
 		err := rw.createHandleCache(options.Handle)
 		if err != nil {
@@ -124,7 +124,7 @@ func (rw *ReadWriteCache) ReadInBuffer(options internal.ReadInBufferOptions) (in
 }
 
 func (rw *ReadWriteCache) WriteFile(options internal.WriteFileOptions) (int, error) {
-	log.Trace("Stream::WriteFile : name=%s, handle=%d, offset=%d", options.Handle.Path, options.Handle.ID, options.Offset)
+	// log.Trace("Stream::WriteFile : name=%s, handle=%d, offset=%d", options.Handle.Path, options.Handle.ID, options.Offset)
 	if !rw.StreamOnly && options.Handle.CacheObj.StreamOnly {
 		err := rw.createHandleCache(options.Handle)
 		if err != nil {
@@ -209,7 +209,7 @@ func (rw *ReadWriteCache) RenameFile(options internal.RenameFileOptions) error {
 }
 
 func (rw *ReadWriteCache) FlushFile(options internal.FlushFileOptions) error {
-	log.Trace("Stream::FlushFile : name=%s, handle=%d", options.Handle.Path, options.Handle.ID)
+	// log.Trace("Stream::FlushFile : name=%s, handle=%d", options.Handle.Path, options.Handle.ID)
 	if !rw.StreamOnly {
 		var err error
 		handleMap := handlemap.GetHandles()
@@ -242,6 +242,8 @@ func (rw *ReadWriteCache) FlushFile(options internal.FlushFileOptions) error {
 	if err != nil {
 		log.Err("Stream::FlushFile : error closing file %s [%s]", options.Handle.Path, err.Error())
 	}
+
+	options.Handle.Flags.Clear(handlemap.HandleFlagDirty)
 	return nil
 }
 
