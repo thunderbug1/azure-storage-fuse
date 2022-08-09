@@ -34,11 +34,10 @@
 package internal
 
 import (
+	"blobfuse2/common"
+	"blobfuse2/internal/handlemap"
 	"context"
 	"syscall"
-
-	"github.com/Azure/azure-storage-fuse/v2/common"
-	"github.com/Azure/azure-storage-fuse/v2/internal/handlemap"
 )
 
 // BaseComponent : Base implementation of the component interface
@@ -46,6 +45,8 @@ type BaseComponent struct {
 	compName string
 	next     Component
 }
+
+const name = "BaseComponent"
 
 var _ Component = &BaseComponent{}
 
@@ -61,7 +62,7 @@ func (base *BaseComponent) SetName(name string) {
 	base.compName = name
 }
 
-func (base *BaseComponent) Configure(isParent bool) error {
+func (base *BaseComponent) Configure() error {
 	return nil
 }
 
@@ -318,7 +319,7 @@ func (base *BaseComponent) InvalidateObject(name string) {
 
 func (base *BaseComponent) FileUsed(name string) error {
 	if base.next != nil {
-		return base.next.FileUsed(name)
+		base.next.FileUsed(name)
 	}
 	return nil
 }

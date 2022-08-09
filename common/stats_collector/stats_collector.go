@@ -39,6 +39,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 
 	"gopkg.in/yaml.v3"
 )
@@ -61,11 +62,7 @@ func GetFuseStats(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(d))
 		return
 	}
-
-	err := json.NewEncoder(w).Encode(Blobfuse2Stats.fuse)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	json.NewEncoder(w).Encode(&Blobfuse2Stats.fuse)
 
 }
 
@@ -84,11 +81,7 @@ func GetAttrCacheStats(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(d))
 		return
 	}
-
-	err := json.NewEncoder(w).Encode(&Blobfuse2Stats.attrCache)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	json.NewEncoder(w).Encode(&Blobfuse2Stats.attrCache)
 
 }
 
@@ -107,11 +100,7 @@ func GetFileCacheStats(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(d))
 		return
 	}
-
-	err := json.NewEncoder(w).Encode(&Blobfuse2Stats.fileCache)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	json.NewEncoder(w).Encode(&Blobfuse2Stats.fileCache)
 
 }
 
@@ -130,11 +119,7 @@ func GetStorageStats(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(d))
 		return
 	}
-
-	err := json.NewEncoder(w).Encode(&Blobfuse2Stats.storage)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	json.NewEncoder(w).Encode(&Blobfuse2Stats.storage)
 }
 
 func GetCommonStats(w http.ResponseWriter, r *http.Request) {
@@ -152,11 +137,7 @@ func GetCommonStats(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(d))
 		return
 	}
-
-	err := json.NewEncoder(w).Encode(&Blobfuse2Stats.common)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	json.NewEncoder(w).Encode(&Blobfuse2Stats.common)
 }
 
 func GetStats(w http.ResponseWriter, r *http.Request) {
@@ -174,17 +155,19 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(d))
 		return
 	}
-
-	err := json.NewEncoder(w).Encode(&Blobfuse2Stats)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	json.NewEncoder(w).Encode(&Blobfuse2Stats)
 }
 
 func allocate() *Stats {
 	var stats *Stats
 
 	stats = &Stats{}
+	stats.fuse.lck = sync.RWMutex{}
+	stats.attrCache.lck = sync.RWMutex{}
+	stats.fileCache.lck = sync.RWMutex{}
+	stats.storage.lck = sync.RWMutex{}
+	stats.common.lck = sync.RWMutex{}
+
 	return stats
 }
 

@@ -34,11 +34,10 @@
 package internal
 
 import (
+	"blobfuse2/common"
+	"blobfuse2/internal/handlemap"
 	"context"
 	"syscall"
-
-	"github.com/Azure/azure-storage-fuse/v2/common"
-	"github.com/Azure/azure-storage-fuse/v2/internal/handlemap"
 )
 
 type ComponentPriority int
@@ -70,7 +69,7 @@ type Component interface {
 	// Pipeline participation related methods
 	Name() string
 	SetName(string)
-	Configure(bool) error
+	Configure() error
 	Priority() ComponentPriority
 
 	SetNextComponent(c Component)

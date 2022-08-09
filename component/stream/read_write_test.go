@@ -34,12 +34,11 @@
 package stream
 
 import (
+	"blobfuse2/common"
+	"blobfuse2/internal"
+	"blobfuse2/internal/handlemap"
 	"os"
 	"testing"
-
-	"github.com/Azure/azure-storage-fuse/v2/common"
-	"github.com/Azure/azure-storage-fuse/v2/internal"
-	"github.com/Azure/azure-storage-fuse/v2/internal/handlemap"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -63,126 +62,6 @@ func (suite *streamTestSuite) TestWriteConfig() {
 	suite.assert.EqualValues(true, suite.stream.StreamOnly)
 }
 
-// ============================================== stream only tests ========================================
-func (suite *streamTestSuite) TestStreamOnlyOpenFile() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 4\n  handle-buffer-size-mb: 32\n  handle-limit: 0\n"
-	suite.setupTestHelper(config, false)
-
-	handle1 := &handlemap.Handle{Size: 0, Path: fileNames[0]}
-	openFileOptions := internal.OpenFileOptions{Name: fileNames[0], Flags: os.O_RDONLY, Mode: os.FileMode(0777)}
-
-	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle1, nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, true)
-}
-
-func (suite *streamTestSuite) TestStreamOnlyCloseFile() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 4\n  handle-buffer-size-mb: 0\n  handle-limit: 10\n"
-	suite.setupTestHelper(config, false)
-
-	handle1 := &handlemap.Handle{Size: 2, Path: fileNames[0]}
-	closeFileOptions := internal.CloseFileOptions{Handle: handle1}
-
-	suite.mock.EXPECT().CloseFile(closeFileOptions).Return(nil)
-	_ = suite.stream.CloseFile(closeFileOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, true)
-}
-
-func (suite *streamTestSuite) TestStreamOnlyCreateFile() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 0\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	handle1 := &handlemap.Handle{Size: 0, Path: fileNames[0]}
-	createFileoptions := internal.CreateFileOptions{Name: handle1.Path, Mode: 0777}
-
-	suite.mock.EXPECT().CreateFile(createFileoptions).Return(handle1, nil)
-	_, _ = suite.stream.CreateFile(createFileoptions)
-	suite.assert.Equal(suite.stream.StreamOnly, true)
-}
-
-func (suite *streamTestSuite) TestStreamOnlyDeleteFile() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 0\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	handle1 := &handlemap.Handle{Size: 0, Path: fileNames[0]}
-	deleteFileOptions := internal.DeleteFileOptions{Name: handle1.Path}
-
-	suite.mock.EXPECT().DeleteFile(deleteFileOptions).Return(nil)
-	_ = suite.stream.DeleteFile(deleteFileOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, true)
-}
-
-func (suite *streamTestSuite) TestStreamOnlyRenameFile() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 0\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	handle1 := &handlemap.Handle{Size: 0, Path: fileNames[0]}
-	renameFileOptions := internal.RenameFileOptions{Src: handle1.Path, Dst: handle1.Path + "new"}
-
-	suite.mock.EXPECT().RenameFile(renameFileOptions).Return(nil)
-	_ = suite.stream.RenameFile(renameFileOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, true)
-}
-
-func (suite *streamTestSuite) TestStreamOnlyRenameDirectory() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 0\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	renameDirOptions := internal.RenameDirOptions{Src: "/test/path", Dst: "/test/path_new"}
-
-	suite.mock.EXPECT().RenameDir(renameDirOptions).Return(nil)
-	_ = suite.stream.RenameDir(renameDirOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, true)
-}
-
-func (suite *streamTestSuite) TestStreamOnlyDeleteDirectory() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 0\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	deleteDirOptions := internal.DeleteDirOptions{Name: "/test/path"}
-
-	suite.mock.EXPECT().DeleteDir(deleteDirOptions).Return(nil)
-	_ = suite.stream.DeleteDir(deleteDirOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, true)
-}
-
-func (suite *streamTestSuite) TestStreamOnlyTruncateFile() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 0\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	handle1 := &handlemap.Handle{Size: 0, Path: fileNames[0]}
-	truncateFileOptions := internal.TruncateFileOptions{Name: handle1.Path}
-
-	suite.mock.EXPECT().TruncateFile(truncateFileOptions).Return(nil)
-	_ = suite.stream.TruncateFile(truncateFileOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, true)
-}
-
-// ============================================================================ read tests ====================================================
 // test small file caching
 func (suite *streamTestSuite) TestCacheSmallFileOnOpen() {
 	defer suite.cleanupTest()
@@ -201,7 +80,7 @@ func (suite *streamTestSuite) TestCacheSmallFileOnOpen() {
 
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 
 	assertBlockNotCached(suite, 0, handle)
 	assertNumberOfCachedFileBlocks(suite, 0, handle)
@@ -220,7 +99,7 @@ func (suite *streamTestSuite) TestCacheSmallFileOnOpen() {
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
 	suite.mock.EXPECT().ReadInBuffer(readInBufferOptions).Return(len(readInBufferOptions.Data), nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 
 	assertBlockCached(suite, 0, handle)
 	assertNumberOfCachedFileBlocks(suite, 1, handle)
@@ -244,7 +123,7 @@ func (suite *streamTestSuite) TestOpenLargeFile() {
 
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 
 	assertBlockNotCached(suite, 0, handle)
 	assertNumberOfCachedFileBlocks(suite, 0, handle)
@@ -268,7 +147,7 @@ func (suite *streamTestSuite) TestStreamOnly() {
 
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 	assertHandleNotStreamOnly(suite, handle)
 
 	// create new handle
@@ -280,7 +159,7 @@ func (suite *streamTestSuite) TestStreamOnly() {
 	}
 
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle, nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 
 	assertBlockNotCached(suite, 0, handle)
 	assertNumberOfCachedFileBlocks(suite, 0, handle)
@@ -304,7 +183,7 @@ func (suite *streamTestSuite) TestReadLargeFileBlocks() {
 
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle1, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 
 	assertBlockNotCached(suite, 0, handle1)
 	assertNumberOfCachedFileBlocks(suite, 0, handle1)
@@ -327,7 +206,7 @@ func (suite *streamTestSuite) TestReadLargeFileBlocks() {
 		Offset: 1 * MB,
 		Data:   make([]byte, 1*MB)}).Return(len(readInBufferOptions.Data), nil)
 
-	_, _ = suite.stream.ReadInBuffer(readInBufferOptions)
+	suite.stream.ReadInBuffer(readInBufferOptions)
 
 	assertBlockCached(suite, 0, handle1)
 	assertBlockCached(suite, 1*MB, handle1)
@@ -356,7 +235,7 @@ func (suite *streamTestSuite) TestPurgeOnClose() {
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
 	suite.mock.EXPECT().ReadInBuffer(readInBufferOptions).Return(len(readInBufferOptions.Data), nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 
 	assertBlockCached(suite, 0, handle)
 	assertNumberOfCachedFileBlocks(suite, 1, handle)
@@ -364,7 +243,7 @@ func (suite *streamTestSuite) TestPurgeOnClose() {
 
 	suite.mock.EXPECT().FlushFile(internal.FlushFileOptions{Handle: handle}).Return(nil)
 	suite.mock.EXPECT().CloseFile(internal.CloseFileOptions{Handle: handle}).Return(nil)
-	_ = suite.stream.CloseFile(internal.CloseFileOptions{Handle: handle})
+	suite.stream.CloseFile(internal.CloseFileOptions{Handle: handle})
 	assertBlockNotCached(suite, 0, handle)
 }
 
@@ -394,7 +273,7 @@ func (suite *streamTestSuite) TestWriteToSmallFileEviction() {
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
 	suite.mock.EXPECT().ReadInBuffer(readInBufferOptions).Return(len(readInBufferOptions.Data), nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 	assertBlockCached(suite, 0, handle)
 	assertNumberOfCachedFileBlocks(suite, 1, handle)
 
@@ -404,7 +283,8 @@ func (suite *streamTestSuite) TestWriteToSmallFileEviction() {
 		Offset: 1 * MB,
 		Data:   make([]byte, 1*MB),
 	}
-	_, _ = suite.stream.WriteFile(writeFileOptions)
+	suite.mock.EXPECT().FlushFile(internal.FlushFileOptions{Handle: handle}).Return(nil)
+	suite.stream.WriteFile(writeFileOptions)
 
 	assertBlockNotCached(suite, 0, handle)
 	assertBlockCached(suite, 1*MB, handle)
@@ -438,10 +318,10 @@ func (suite *streamTestSuite) TestLargeFileEviction() {
 
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 
 	suite.mock.EXPECT().ReadInBuffer(readInBufferOptions).Return(len(readInBufferOptions.Data), nil)
-	_, _ = suite.stream.ReadInBuffer(readInBufferOptions)
+	suite.stream.ReadInBuffer(readInBufferOptions)
 
 	assertBlockCached(suite, 0, handle)
 	assertNumberOfCachedFileBlocks(suite, 1, handle)
@@ -454,7 +334,7 @@ func (suite *streamTestSuite) TestLargeFileEviction() {
 	}
 
 	suite.mock.EXPECT().ReadInBuffer(readInBufferOptions).Return(len(readInBufferOptions.Data), nil)
-	_, _ = suite.stream.ReadInBuffer(readInBufferOptions)
+	suite.stream.ReadInBuffer(readInBufferOptions)
 
 	assertBlockCached(suite, 1*MB, handle)
 	assertNumberOfCachedFileBlocks(suite, 2, handle)
@@ -465,11 +345,11 @@ func (suite *streamTestSuite) TestLargeFileEviction() {
 		Offset: 1*MB + 2,
 		Data:   make([]byte, 2),
 	}
-	_, _ = suite.stream.WriteFile(writeFileOptions)
+	suite.stream.WriteFile(writeFileOptions)
 
 	// write to first block
 	writeFileOptions.Offset = 2
-	_, _ = suite.stream.WriteFile(writeFileOptions)
+	suite.stream.WriteFile(writeFileOptions)
 
 	// append to file
 	writeFileOptions.Offset = 2*MB + 4
@@ -480,8 +360,9 @@ func (suite *streamTestSuite) TestLargeFileEviction() {
 		block2.Flags.Clear(common.DirtyBlock)
 	}
 	suite.mock.EXPECT().FlushFile(internal.FlushFileOptions{Handle: handle}).Do(callbackFunc).Return(nil)
+	suite.mock.EXPECT().FlushFile(internal.FlushFileOptions{Handle: handle}).Return(nil)
 
-	_, _ = suite.stream.WriteFile(writeFileOptions)
+	suite.stream.WriteFile(writeFileOptions)
 
 	assertBlockCached(suite, 0, handle)
 	assertBlockCached(suite, 2*MB, handle)
@@ -507,7 +388,7 @@ func (suite *streamTestSuite) TestStreamOnlyHandle() {
 
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle1, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 
 	assertBlockNotCached(suite, 0, handle1)
 	assertNumberOfCachedFileBlocks(suite, 0, handle1)
@@ -516,7 +397,7 @@ func (suite *streamTestSuite) TestStreamOnlyHandle() {
 	handle2 := &handlemap.Handle{Size: int64(2 * MB), Path: fileNames[0]}
 	openFileOptions = internal.OpenFileOptions{Name: fileNames[0], Flags: os.O_RDONLY, Mode: os.FileMode(0777)}
 	suite.mock.EXPECT().OpenFile(openFileOptions).Return(handle2, nil)
-	_, _ = suite.stream.OpenFile(openFileOptions)
+	suite.stream.OpenFile(openFileOptions)
 
 	assertBlockNotCached(suite, 0, handle2)
 	assertNumberOfCachedFileBlocks(suite, 0, handle2)
@@ -527,7 +408,7 @@ func (suite *streamTestSuite) TestStreamOnlyHandle() {
 	closeFileOptions := internal.CloseFileOptions{Handle: handle1}
 	suite.mock.EXPECT().FlushFile(internal.FlushFileOptions{Handle: handle1}).Return(nil)
 	suite.mock.EXPECT().CloseFile(closeFileOptions).Return(nil)
-	_ = suite.stream.CloseFile(closeFileOptions)
+	suite.stream.CloseFile(closeFileOptions)
 
 	// get block for second handle and confirm it gets cached
 	readInBufferOptions := internal.ReadInBufferOptions{
@@ -541,7 +422,7 @@ func (suite *streamTestSuite) TestStreamOnlyHandle() {
 		Handle: handle2,
 		Offset: 0,
 		Data:   make([]byte, 1*MB)}).Return(len(readInBufferOptions.Data), nil)
-	_, _ = suite.stream.ReadInBuffer(readInBufferOptions)
+	suite.stream.ReadInBuffer(readInBufferOptions)
 
 	assertBlockCached(suite, 0, handle2)
 	assertNumberOfCachedFileBlocks(suite, 1, handle2)
@@ -565,66 +446,8 @@ func (suite *streamTestSuite) TestCreateFile() {
 
 	suite.mock.EXPECT().CreateFile(createFileoptions).Return(handle1, nil)
 	suite.mock.EXPECT().GetFileBlockOffsets(getFileBlockOffsetsOptions).Return(bol, nil)
-	_, _ = suite.stream.CreateFile(createFileoptions)
+	suite.stream.CreateFile(createFileoptions)
 	assertHandleNotStreamOnly(suite, handle1)
-}
-
-func (suite *streamTestSuite) TestTruncateFile() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 4\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	handle1 := &handlemap.Handle{Size: 1, Path: fileNames[0]}
-	truncateFileOptions := internal.TruncateFileOptions{Name: handle1.Path}
-
-	suite.mock.EXPECT().TruncateFile(truncateFileOptions).Return(nil)
-	_ = suite.stream.TruncateFile(truncateFileOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, false)
-}
-
-func (suite *streamTestSuite) TestRenameFile() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 4\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	handle1 := &handlemap.Handle{Size: 0, Path: fileNames[0]}
-	renameFileOptions := internal.RenameFileOptions{Src: handle1.Path, Dst: handle1.Path + "new"}
-
-	suite.mock.EXPECT().RenameFile(renameFileOptions).Return(nil)
-	_ = suite.stream.RenameFile(renameFileOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, false)
-}
-
-func (suite *streamTestSuite) TestRenameDirectory() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 4\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	renameDirOptions := internal.RenameDirOptions{Src: "/test/path", Dst: "/test/path_new"}
-
-	suite.mock.EXPECT().RenameDir(renameDirOptions).Return(nil)
-	_ = suite.stream.RenameDir(renameDirOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, false)
-}
-
-func (suite *streamTestSuite) TestDeleteDirectory() {
-	defer suite.cleanupTest()
-	suite.cleanupTest()
-	// set handle limit to 1
-	config := "stream:\n  block-size-mb: 4\n  handle-buffer-size-mb: 32\n  handle-limit: 1\n"
-	suite.setupTestHelper(config, false)
-
-	deleteDirOptions := internal.DeleteDirOptions{Name: "/test/path"}
-
-	suite.mock.EXPECT().DeleteDir(deleteDirOptions).Return(nil)
-	_ = suite.stream.DeleteDir(deleteDirOptions)
-	suite.assert.Equal(suite.stream.StreamOnly, false)
 }
 
 // func (suite *streamTestSuite) TestFlushFile() {

@@ -225,7 +225,8 @@ func (tree *Tree) MergeWithKey(key string, obj interface{}, getValue func(val in
 	if subTree == nil {
 		return
 	}
-	var elem = reflect.Indirect(reflect.ValueOf(obj))
+	var elem reflect.Value
+	elem = reflect.Indirect(reflect.ValueOf(obj))
 	if obj == nil {
 		return
 	}
@@ -263,7 +264,8 @@ func (tree *Tree) Merge(obj interface{}, getValue func(val interface{}) (res int
 	if subTree == nil {
 		return
 	}
-	var elem = reflect.Indirect(reflect.ValueOf(obj))
+	var elem reflect.Value
+	elem = reflect.Indirect(reflect.ValueOf(obj))
 	if obj == nil {
 		return
 	}

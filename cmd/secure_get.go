@@ -51,10 +51,7 @@ var getKeyCmd = &cobra.Command{
 	Example:           "blobfuse2 secure get --config-file=config.yaml --passphrase=PASSPHRASE --key=logging.log_level",
 	FlagErrorHandling: cobra.ExitOnError,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := validateOptions()
-		if err != nil {
-			return err
-		}
+		validateOptions()
 
 		plainText, err := decryptConfigFile(false)
 		if err != nil {

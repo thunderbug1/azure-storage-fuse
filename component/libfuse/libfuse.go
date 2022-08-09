@@ -34,13 +34,12 @@
 package libfuse
 
 import (
+	"blobfuse2/common"
+	"blobfuse2/common/config"
+	"blobfuse2/common/log"
+	"blobfuse2/internal"
 	"context"
 	"fmt"
-
-	"github.com/Azure/azure-storage-fuse/v2/common"
-	"github.com/Azure/azure-storage-fuse/v2/common/config"
-	"github.com/Azure/azure-storage-fuse/v2/common/log"
-	"github.com/Azure/azure-storage-fuse/v2/internal"
 )
 
 /* NOTES:
@@ -133,11 +132,7 @@ func (lf *Libfuse) Start(ctx context.Context) error {
 	fuseFS = lf
 
 	// This starts the libfuse process and hence shall always be the last statement
-	err := lf.initFuse()
-	if err != nil {
-		log.Err("Libfuse::Start : Failed to init fuse [%s]", err.Error())
-		return err
-	}
+	lf.initFuse()
 
 	return nil
 }
@@ -145,7 +140,7 @@ func (lf *Libfuse) Start(ctx context.Context) error {
 // Stop : Stop the component functionality and kill all threads started
 func (lf *Libfuse) Stop() error {
 	log.Trace("Libfuse::Stop : Stopping component %s", lf.Name())
-	_ = lf.destroyFuse()
+	lf.destroyFuse()
 	return nil
 }
 
@@ -200,7 +195,7 @@ func (lf *Libfuse) Validate(opt *LibfuseOptions) error {
 
 // Configure : Pipeline will call this method after constructor so that you can read config and initialize yourself
 //  Return failure if any config is not valid to exit the process
-func (lf *Libfuse) Configure(_ bool) error {
+func (lf *Libfuse) Configure() error {
 	log.Trace("Libfuse::Configure : %s", lf.Name())
 
 	// >> If you do not need any config parameters remove below code and return nil

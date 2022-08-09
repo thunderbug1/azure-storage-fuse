@@ -38,7 +38,6 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -62,13 +61,7 @@ var generateTestConfig = &cobra.Command{
 	Args:              cobra.ExactArgs(0),
 	FlagErrorHandling: cobra.ExitOnError,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var templateConfig []byte
-		var err error
-		if strings.Contains(opts.configFilePath, templatesDir) {
-			templateConfig, err = ioutil.ReadFile(opts.configFilePath)
-		} else {
-			templateConfig, err = ioutil.ReadFile(templatesDir + opts.configFilePath)
-		}
+		templateConfig, err := ioutil.ReadFile(templatesDir + opts.configFilePath)
 		if err != nil {
 			log.Fatal(err)
 			return err

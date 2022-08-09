@@ -34,14 +34,13 @@
 package stream
 
 import (
+	"blobfuse2/common/config"
+	"blobfuse2/common/log"
+	"blobfuse2/internal"
+	"blobfuse2/internal/handlemap"
 	"context"
 	"errors"
 	"fmt"
-
-	"github.com/Azure/azure-storage-fuse/v2/common/config"
-	"github.com/Azure/azure-storage-fuse/v2/common/log"
-	"github.com/Azure/azure-storage-fuse/v2/internal"
-	"github.com/Azure/azure-storage-fuse/v2/internal/handlemap"
 
 	"github.com/pbnjay/memory"
 )
@@ -64,8 +63,9 @@ type StreamOptions struct {
 }
 
 const (
-	compName = "stream"
-	mb       = 1024 * 1024
+	compName              = "stream"
+	mb                    = 1024 * 1024
+	defaultDiskTimeoutSec = (30 * 60)
 )
 
 var _ internal.Component = &Stream{}
@@ -91,7 +91,7 @@ func (st *Stream) Start(ctx context.Context) error {
 	return nil
 }
 
-func (st *Stream) Configure(_ bool) error {
+func (st *Stream) Configure() error {
 	log.Trace("Stream::Configure : %s", st.Name())
 	conf := StreamOptions{}
 	err := config.UnmarshalKey(compName, &conf)
@@ -152,10 +152,6 @@ func (st *Stream) DeleteDir(options internal.DeleteDirOptions) error {
 
 func (st *Stream) RenameDir(options internal.RenameDirOptions) error {
 	return st.cache.RenameDirectory(options)
-}
-
-func (st *Stream) TruncateFile(options internal.TruncateFileOptions) error {
-	return st.cache.TruncateFile(options)
 }
 
 // ------------------------- Factory -------------------------------------------

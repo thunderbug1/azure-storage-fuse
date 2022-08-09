@@ -34,8 +34,8 @@
 package stream
 
 import (
-	"github.com/Azure/azure-storage-fuse/v2/internal"
-	"github.com/Azure/azure-storage-fuse/v2/internal/handlemap"
+	"blobfuse2/internal"
+	"blobfuse2/internal/handlemap"
 )
 
 type StreamConnection interface {
@@ -58,11 +58,11 @@ func NewStreamConnection(cfg StreamOptions, stream *Stream) StreamConnection {
 	if cfg.readOnly {
 		r := ReadCache{}
 		r.Stream = stream
-		_ = r.Configure(cfg)
+		r.Configure(cfg)
 		return &r
 	}
 	rw := ReadWriteCache{}
 	rw.Stream = stream
-	_ = rw.Configure(cfg)
+	rw.Configure(cfg)
 	return &rw
 }

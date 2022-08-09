@@ -34,10 +34,9 @@
 package internal
 
 import (
+	"blobfuse2/common/log"
 	"context"
 	"fmt"
-
-	"github.com/Azure/azure-storage-fuse/v2/common/log"
 )
 
 // Pipeline: Base pipeline structure holding list of components deployed along with the head of pipeline
@@ -53,7 +52,7 @@ type NewComponent func() Component
 var registeredComponents map[string]NewComponent
 
 // NewPipeline : Using a list of strings holding name of components, create and configure the component objects
-func NewPipeline(components []string, isParent bool) (*Pipeline, error) {
+func NewPipeline(components []string) (*Pipeline, error) {
 	comps := make([]Component, 0)
 	lastPriority := EComponentPriority.Producer()
 	for _, name := range components {
@@ -64,7 +63,7 @@ func NewPipeline(components []string, isParent bool) (*Pipeline, error) {
 			comp := compInit()
 
 			// request component to parse and validate config of its interest
-			err := comp.Configure(isParent)
+			err := comp.Configure()
 			if err != nil {
 				log.Err("Pipeline: error creating pipeline component %s [%s]", comp.Name(), err)
 				return nil, err

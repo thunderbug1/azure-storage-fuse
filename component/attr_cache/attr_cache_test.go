@@ -34,6 +34,11 @@
 package attr_cache
 
 import (
+	"blobfuse2/common"
+	"blobfuse2/common/config"
+	"blobfuse2/common/log"
+	"blobfuse2/internal"
+	"blobfuse2/internal/handlemap"
 	"container/list"
 	"context"
 	"errors"
@@ -45,12 +50,6 @@ import (
 	"syscall"
 	"testing"
 	"time"
-
-	"github.com/Azure/azure-storage-fuse/v2/common"
-	"github.com/Azure/azure-storage-fuse/v2/common/config"
-	"github.com/Azure/azure-storage-fuse/v2/common/log"
-	"github.com/Azure/azure-storage-fuse/v2/internal"
-	"github.com/Azure/azure-storage-fuse/v2/internal/handlemap"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -70,10 +69,10 @@ var defaultSize = int64(0)
 var defaultMode = 0777
 
 func newTestAttrCache(next internal.Component, configuration string) *AttrCache {
-	_ = config.ReadConfigFromReader(strings.NewReader(configuration))
+	config.ReadConfigFromReader(strings.NewReader(configuration))
 	attrCache := NewAttrCacheComponent()
 	attrCache.SetNextComponent(next)
-	_ = attrCache.Configure(true)
+	attrCache.Configure()
 
 	return attrCache.(*AttrCache)
 }
@@ -193,11 +192,11 @@ func (suite *attrCacheTestSuite) setupTestHelper(config string) {
 	suite.mockCtrl = gomock.NewController(suite.T())
 	suite.mock = internal.NewMockComponent(suite.mockCtrl)
 	suite.attrCache = newTestAttrCache(suite.mock, config)
-	_ = suite.attrCache.Start(context.Background())
+	suite.attrCache.Start(context.Background())
 }
 
 func (suite *attrCacheTestSuite) cleanupTest() {
-	_ = suite.attrCache.Stop()
+	suite.attrCache.Stop()
 	suite.mockCtrl.Finish()
 }
 
@@ -851,8 +850,8 @@ func (suite *attrCacheTestSuite) TestGetAttrExistsDeleted() {
 			// delete directory a and file ac
 			suite.mock.EXPECT().DeleteDir(gomock.Any()).Return(nil)
 			suite.mock.EXPECT().DeleteFile(gomock.Any()).Return(nil)
-			_ = suite.attrCache.DeleteDir(internal.DeleteDirOptions{Name: "a"})
-			_ = suite.attrCache.DeleteFile(internal.DeleteFileOptions{Name: "ac"})
+			suite.attrCache.DeleteDir(internal.DeleteDirOptions{Name: "a"})
+			suite.attrCache.DeleteFile(internal.DeleteFileOptions{Name: "ac"})
 
 			options := internal.GetAttrOptions{Name: path}
 			// no call to mock component since attributes are accessible

@@ -34,9 +34,8 @@
 package internal
 
 import (
+	"blobfuse2/internal/handlemap"
 	"os"
-
-	"github.com/Azure/azure-storage-fuse/v2/internal/handlemap"
 )
 
 type CreateDirOptions struct {

@@ -34,6 +34,10 @@
 package attr_cache
 
 import (
+	"blobfuse2/common/config"
+	"blobfuse2/common/log"
+	"blobfuse2/internal"
+	"blobfuse2/internal/handlemap"
 	"context"
 	"fmt"
 	"os"
@@ -41,11 +45,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"github.com/Azure/azure-storage-fuse/v2/common/config"
-	"github.com/Azure/azure-storage-fuse/v2/common/log"
-	"github.com/Azure/azure-storage-fuse/v2/internal"
-	"github.com/Azure/azure-storage-fuse/v2/internal/handlemap"
 )
 
 // By default attr cache is valid for 120 seconds
@@ -114,7 +113,7 @@ func (ac *AttrCache) Stop() error {
 
 // Configure : Pipeline will call this method after constructor so that you can read config and initialize yourself
 //  Return failure if any config is not valid to exit the process
-func (ac *AttrCache) Configure(_ bool) error {
+func (ac *AttrCache) Configure() error {
 	log.Trace("AttrCache::Configure : %s", ac.Name())
 
 	// >> If you do not need any config parameters remove below code and return nil
@@ -144,7 +143,7 @@ func (ac *AttrCache) Configure(_ bool) error {
 // OnConfigChange : If component has registered, on config file change this method is called
 func (ac *AttrCache) OnConfigChange() {
 	log.Trace("AttrCache::OnConfigChange : %s", ac.Name())
-	_ = ac.Configure(true)
+	ac.Configure()
 }
 
 // Helper Methods

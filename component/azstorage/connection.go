@@ -34,12 +34,11 @@
 package azstorage
 
 import (
+	"blobfuse2/common"
+	"blobfuse2/common/log"
+	"blobfuse2/internal"
 	"net/url"
 	"os"
-
-	"github.com/Azure/azure-storage-fuse/v2/common"
-	"github.com/Azure/azure-storage-fuse/v2/common/log"
-	"github.com/Azure/azure-storage-fuse/v2/internal"
 
 	"github.com/Azure/azure-pipeline-go/pipeline"
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -91,6 +90,7 @@ type AzConnection interface {
 	// This is just for test, shall not be used otherwise
 	SetPrefixPath(string) error
 
+	Exists(name string) bool
 	CreateFile(name string, mode os.FileMode) error
 	CreateDirectory(name string) error
 	CreateLink(source string, target string) error
