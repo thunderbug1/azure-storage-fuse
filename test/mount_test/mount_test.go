@@ -171,6 +171,42 @@ func (suite *mountSuite) TestMountPathNotProvided() {
 	blobfuseUnmount(suite, "nothing to unmount")
 }
 
+// mount failure test where the config file type is unsupported
+func (suite *mountSuite) TestUnsupportedConfigFile() {
+	mountCmd := exec.Command(blobfuseBinary, "mount", mntDir, "--config-file=cfgInvalid.yam")
+	cliOut, err := mountCmd.Output()
+	fmt.Println(string(cliOut))
+	suite.NotEqual(0, len(cliOut))
+	suite.NotEqual(nil, err)
+	suite.Contains(string(cliOut), "invalid config file")
+	suite.Contains(string(cliOut), "Unsupported Config Type")
+
+	// list blobfuse mounted directories
+	cliOut = listBlobfuseMounts(suite)
+	suite.Equal(0, len(cliOut))
+
+	// unmount
+	blobfuseUnmount(suite, "nothing to unmount")
+}
+
+// mount failure test where the config file is not present
+func (suite *mountSuite) TestConfigFileNotFound() {
+	mountCmd := exec.Command(blobfuseBinary, "mount", mntDir, "--config-file=cfgInvalid.yaml")
+	cliOut, err := mountCmd.Output()
+	fmt.Println(string(cliOut))
+	suite.NotEqual(0, len(cliOut))
+	suite.NotEqual(nil, err)
+	suite.Contains(string(cliOut), "invalid config file")
+	suite.Contains(string(cliOut), "no such file or directory")
+
+	// list blobfuse mounted directories
+	cliOut = listBlobfuseMounts(suite)
+	suite.Equal(0, len(cliOut))
+
+	// unmount
+	blobfuseUnmount(suite, "nothing to unmount")
+}
+
 // mount failure test where config file is not provided
 func (suite *mountSuite) TestConfigFileNotProvided() {
 	mountCmd := exec.Command(blobfuseBinary, "mount", mntDir)
@@ -259,20 +295,40 @@ func (suite *mountSuite) TestEnvVarMount() {
 	os.Unsetenv("AZURE_STORAGE_ACCOUNT_TYPE")
 }
 
+// mount failure test where the log level is invalid
+func (suite *mountSuite) TestInvalidLogLevel() {
+	mountCmd := exec.Command(blobfuseBinary, "mount", mntDir, "--config-file="+configFile, "--log-level=debug")
+	cliOut, err := mountCmd.Output()
+	fmt.Println(string(cliOut))
+	suite.NotEqual(0, len(cliOut))
+	suite.NotEqual(nil, err)
+	suite.Contains(string(cliOut), "invalid log-level")
+
+	// list blobfuse mounted directories
+	cliOut = listBlobfuseMounts(suite)
+	suite.Equal(0, len(cliOut))
+
+	// unmount
+	blobfuseUnmount(suite, "nothing to unmount")
+}
+
 func TestMountSuite(t *testing.T) {
 	suite.Run(t, new(mountSuite))
 }
 
 func TestMain(m *testing.M) {
-	workingDirPtr := flag.String("working-dir", "", "Directory containing the blobfuse binary")
-	pathPtr := flag.String("mnt-path", ".", "Mount Path of Container")
-	configPtr := flag.String("config-file", "", "Config file for mounting")
+	// workingDirPtr := flag.String("working-dir", "", "Directory containing the blobfuse binary")
+	// pathPtr := flag.String("mnt-path", ".", "Mount Path of Container")
+	// configPtr := flag.String("config-file", "", "Config file for mounting")
 
 	flag.Parse()
 
-	blobfuseBinary = filepath.Join(*workingDirPtr, blobfuseBinary)
-	mntDir = filepath.Join(*pathPtr, mntDir)
-	configFile = *configPtr
+	// blobfuseBinary = filepath.Join(*workingDirPtr, blobfuseBinary)
+	// mntDir = filepath.Join(*pathPtr, mntDir)
+	// configFile = *configPtr
+	blobfuseBinary = "/home/sourav/go/src/blobfusev1/blobfuse2"
+	mntDir = "/home/sourav/testmntdir"
+	configFile = "/home/sourav/config/v2/config.yaml"
 
 	err := os.RemoveAll(mntDir)
 	if err != nil {

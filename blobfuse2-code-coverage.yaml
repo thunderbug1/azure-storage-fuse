@@ -137,6 +137,12 @@ jobs:
         workingDirectory: $(WORK_DIR)
         displayName: "Block Blob Coverage"
 
+      # Code Coverage with mount tests for block blob
+      - script: |
+          go test -v -timeout=1h test/mount_test/mount_test.go -covermode count -coverprofile $(WORK_DIR)/blobfuse2_mount_block.cov -args -working-dir=$(WORK_DIR) -mnt-path=$(MOUNT_DIR) -config-file=$(BLOBFUSE2_CFG)'
+        workingDirectory: $(WORK_DIR)
+        displayName: "Mount Code Coverage for Block Blob"
+
       - script: |
           cd $(WORK_DIR)
           $(WORK_DIR)/blobfuse2 gen-test-config --config-file=azure_key.yaml --container-name=$(containerName) --temp-path=$(TEMP_DIR) --output-file=$(BLOBFUSE2_ADLS_CFG)
@@ -165,6 +171,11 @@ jobs:
         workingDirectory: $(WORK_DIR)
         displayName: "ADLS Coverage"
 
+      # Code Coverage with mount tests for adls
+      - script: |
+          go test -v -timeout=1h test/mount_test/mount_test.go -covermode count -coverprofile $(WORK_DIR)/blobfuse2_mount_adls.cov -args -working-dir=$(WORK_DIR) -mnt-path=$(MOUNT_DIR) -config-file=$(BLOBFUSE2_ADLS_CFG)'
+        workingDirectory: $(WORK_DIR)
+        displayName: "Mount Code Coverage for Adls"
 
       # -------------------------------------------------------
       # Config Generation (Block Blob - LFU policy)
