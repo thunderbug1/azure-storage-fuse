@@ -317,18 +317,15 @@ func TestMountSuite(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	// workingDirPtr := flag.String("working-dir", "", "Directory containing the blobfuse binary")
-	// pathPtr := flag.String("mnt-path", ".", "Mount Path of Container")
-	// configPtr := flag.String("config-file", "", "Config file for mounting")
+	workingDirPtr := flag.String("working-dir", "", "Directory containing the blobfuse binary")
+	pathPtr := flag.String("mnt-path", ".", "Mount Path of Container")
+	configPtr := flag.String("config-file", "", "Config file for mounting")
 
 	flag.Parse()
 
-	// blobfuseBinary = filepath.Join(*workingDirPtr, blobfuseBinary)
-	// mntDir = filepath.Join(*pathPtr, mntDir)
-	// configFile = *configPtr
-	blobfuseBinary = "/home/sourav/go/src/blobfusev1/blobfuse2"
-	mntDir = "/home/sourav/testmntdir"
-	configFile = "/home/sourav/config/v2/config.yaml"
+	blobfuseBinary = filepath.Join(*workingDirPtr, blobfuseBinary)
+	mntDir = filepath.Join(*pathPtr, mntDir)
+	configFile = *configPtr
 
 	err := os.RemoveAll(mntDir)
 	if err != nil {
