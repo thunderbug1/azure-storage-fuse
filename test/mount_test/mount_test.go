@@ -158,7 +158,7 @@ func (suite *mountSuite) TestMountDirNotEmpty() {
 
 // mount failure test where the mount path is not provided
 func (suite *mountSuite) TestMountPathNotProvided() {
-	mountCmd := exec.Command(blobfuseBinary, "mount", "--config-file="+configFile)
+	mountCmd := exec.Command(blobfuseBinary, "mount", "", "--config-file="+configFile)
 	cliOut, err := mountCmd.Output()
 	fmt.Println(string(cliOut))
 	suite.NotEqual(0, len(cliOut))
