@@ -49,7 +49,6 @@ import (
 
 	"github.com/Azure/azure-storage-fuse/v2/common"
 	"github.com/Azure/azure-storage-fuse/v2/common/config"
-	"github.com/Azure/azure-storage-fuse/v2/common/exectime"
 	"github.com/Azure/azure-storage-fuse/v2/common/log"
 	"github.com/Azure/azure-storage-fuse/v2/internal"
 
@@ -74,8 +73,6 @@ type mountOptions struct {
 	Components        []string   `config:"components"`
 	Foreground        bool       `config:"foreground"`
 	DefaultWorkingDir string     `config:"default-working-dir"`
-	Debug             bool       `config:"debug"`
-	DebugPath         string     `config:"debug-path"`
 	CPUProfile        string     `config:"cpu-profile"`
 	MemProfile        string     `config:"mem-profile"`
 	PassPhrase        string     `config:"passphrase"`
@@ -83,10 +80,11 @@ type mountOptions struct {
 	DynamicProfiler   bool       `config:"dynamic-profile"`
 	ProfilerPort      int        `config:"profiler-port"`
 	ProfilerIP        string     `config:"profiler-ip"`
+	// Debug             bool       `config:"debug"`
+	// DebugPath         string     `config:"debug-path"`
 }
 
 var options mountOptions
-var pipelineStarted bool //nolint
 
 func (opt *mountOptions) validate(skipEmptyMount bool) error {
 	if opt.MountPath == "" {
@@ -126,15 +124,17 @@ func (opt *mountOptions) validate(skipEmptyMount bool) error {
 		common.DefaultLogFilePath = filepath.Join(common.DefaultWorkDir, "blobfuse2.log")
 	}
 
-	if opt.Debug {
-		_, err := os.Stat(opt.DebugPath)
-		if os.IsNotExist(err) {
-			err := os.MkdirAll(opt.DebugPath, os.FileMode(0755))
-			if err != nil {
-				return fmt.Errorf("argument error: invalid debug path")
-			}
-		}
-	}
+	// commented as exectime is commented out
+
+	// if opt.Debug {
+	// 	_, err := os.Stat(opt.DebugPath)
+	// 	if os.IsNotExist(err) {
+	// 		err := os.MkdirAll(opt.DebugPath, os.FileMode(0755))
+	// 		if err != nil {
+	// 			return fmt.Errorf("argument error: invalid debug path")
+	// 		}
+	// 	}
+	// }
 	return nil
 }
 
@@ -281,16 +281,19 @@ var mountCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if options.Debug {
-			f, err := os.OpenFile(filepath.Join(options.DebugPath, "times.log"), os.O_CREATE|os.O_APPEND|os.O_RDWR, os.FileMode(0755))
-			if err != nil {
-				fmt.Printf("unable to open times.log file for exectime reporting [%s]", err)
-			}
-			exectime.SetDefault(f, true)
-		} else {
-			exectime.SetDefault(nil, false)
-		}
-		defer exectime.PrintStats()
+		// commenting as this is not used - exectime is used for calculating average time taken by a function
+		// used in block_blob.go and file_cache.go. However calls are commented. So, no point in initializing this library
+
+		// if options.Debug {
+		// 	f, err := os.OpenFile(filepath.Join(options.DebugPath, "times.log"), os.O_CREATE|os.O_APPEND|os.O_RDWR, os.FileMode(0755))
+		// 	if err != nil {
+		// 		fmt.Printf("unable to open times.log file for exectime reporting [%s]", err)
+		// 	}
+		// 	exectime.SetDefault(f, true)
+		// } else {
+		// 	exectime.SetDefault(nil, false)
+		// }
+		// defer exectime.PrintStats()
 
 		config.Set("mount-path", options.MountPath)
 
@@ -365,7 +368,6 @@ var mountCmd = &cobra.Command{
 }
 
 func runPipeline(pipeline *internal.Pipeline, ctx context.Context) {
-	pipelineStarted = true
 	err := pipeline.Start(ctx)
 	if err != nil {
 		log.Err("Mount: error unable to start pipeline [%v]", err)
@@ -373,7 +375,6 @@ func runPipeline(pipeline *internal.Pipeline, ctx context.Context) {
 		Destroy(1)
 	}
 
-	pipelineStarted = false
 	err = pipeline.Stop()
 	if err != nil {
 		log.Err("Mount: error unable to stop pipeline [%v]", err)
@@ -443,7 +444,6 @@ func startDynamicProfiler() {
 
 func init() {
 	rootCmd.AddCommand(mountCmd)
-	pipelineStarted = false
 
 	options = mountOptions{}
 
