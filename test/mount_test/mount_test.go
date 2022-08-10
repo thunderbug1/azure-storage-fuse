@@ -39,12 +39,14 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/Azure/azure-storage-fuse/v2/common"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 )
@@ -102,7 +104,7 @@ func (suite *mountSuite) TestMountCmd() {
 	suite.Equal(nil, err)
 
 	// wait for mount
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	// validate mount
 	cliOut = listBlobfuseMounts(suite)
@@ -156,7 +158,7 @@ func (suite *mountSuite) TestMountDirNotEmpty() {
 
 // mount failure test where the mount path is not provided
 func (suite *mountSuite) TestMountPathNotProvided() {
-	mountCmd := exec.Command(blobfuseBinary, "mount", "", "--config-file="+configFile)
+	mountCmd := exec.Command(blobfuseBinary, "mount", "--config-file="+configFile)
 	cliOut, err := mountCmd.Output()
 	fmt.Println(string(cliOut))
 	suite.NotEqual(0, len(cliOut))
@@ -172,7 +174,7 @@ func (suite *mountSuite) TestMountPathNotProvided() {
 }
 
 // mount failure test where the config file type is unsupported
-func (suite *mountSuite) TestUnsupportedConfigFile() {
+func (suite *mountSuite) TestUnsupportedConfigFileType() {
 	mountCmd := exec.Command(blobfuseBinary, "mount", mntDir, "--config-file=cfgInvalid.yam")
 	cliOut, err := mountCmd.Output()
 	fmt.Println(string(cliOut))
@@ -222,6 +224,49 @@ func (suite *mountSuite) TestConfigFileNotProvided() {
 
 	// unmount
 	blobfuseUnmount(suite, "nothing to unmount")
+}
+
+// mount test where default config file is used
+func (suite *mountSuite) TestDefaultConfigFile() {
+	currDir, err := os.Getwd()
+	suite.Equal(nil, err)
+	defaultCfgPath := filepath.Join(currDir, common.DefaultConfigFilePath)
+
+	// create default config file
+	src, err := os.Open(configFile)
+	suite.Equal(nil, err)
+
+	dest, err := os.Create(defaultCfgPath)
+	suite.Equal(nil, err)
+
+	bytesCopied, err := io.Copy(dest, src)
+	suite.Equal(nil, err)
+	suite.NotEqual(0, bytesCopied)
+
+	err = dest.Close()
+	suite.Equal(nil, err)
+	err = src.Close()
+	suite.Equal(nil, err)
+
+	// run mount command
+	mountCmd := exec.Command(blobfuseBinary, "mount", mntDir)
+	cliOut, err := mountCmd.Output()
+	fmt.Println(string(cliOut))
+	suite.Equal(0, len(cliOut))
+	suite.Equal(nil, err)
+
+	// wait for mount
+	time.Sleep(5 * time.Second)
+
+	// list blobfuse mounted directories
+	cliOut = listBlobfuseMounts(suite)
+	suite.NotEqual(0, len(cliOut))
+	suite.Contains(string(cliOut), mntDir)
+
+	// unmount
+	blobfuseUnmount(suite, mntDir)
+
+	os.RemoveAll(defaultCfgPath)
 }
 
 // mount failure test where config file is not provided and environment variables have incorrect credentials
@@ -278,7 +323,7 @@ func (suite *mountSuite) TestEnvVarMount() {
 	suite.Equal(nil, err)
 
 	// wait for mount
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	// list blobfuse mounted directories
 	cliOut = listBlobfuseMounts(suite)
