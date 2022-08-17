@@ -725,13 +725,13 @@ jobs:
     timeoutInMinutes: 60
     strategy:
       matrix:
-        # Debian-9.0:
-        #   DistroVer: "Debian9.0"
-        #   Description: "Debian 9"
-        #   AgentName: "blobfuse-debian9"
-        #   ContainerName: "test-cnt-deb-9"
-        #   fuselib: 'fuse libfuse-dev'
-        #   tags: 'fuse2'
+        Debian-9.0:
+          DistroVer: "Debian9.0"
+          Description: "Debian 9"
+          AgentName: "blobfuse-debian9"
+          ContainerName: "test-cnt-deb-9"
+          fuselib: 'fuse libfuse-dev'
+          tags: 'fuse2'
         Debian-10.0:
           DistroVer: "Debian10.0"
           Description: "Debian 10"
