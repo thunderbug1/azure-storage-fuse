@@ -751,7 +751,6 @@ jobs:
       name: "blobfuse-debian-pool"
       demands:
         - ImageOverride -equals $(AgentName)
-        - "RunAs" -equals root
 
     variables:
       - group: NightlyBlobFuse
@@ -802,6 +801,7 @@ jobs:
               sudo apt-get install $(fuselib) -y
               sudo apt-get install build-essential git python3 -y
             displayName: 'Install fuse'
+            runAsRoot: true
           verbose_log: ${{ parameters.verbose_log }}
 
   # SUSE Tests
