@@ -797,7 +797,6 @@ jobs:
           gopath: $(GOPATH)
           installStep:
             script: |
-              rm /etc/apt/sources.list.d/azure.list
               apt-get update --fix-missing -y
               apt-get install $(fuselib) -y
               apt-get install build-essential git python3 -y
