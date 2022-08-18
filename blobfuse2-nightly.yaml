@@ -751,7 +751,7 @@ jobs:
       name: "blobfuse-debian-pool"
       demands:
         - ImageOverride -equals $(AgentName)
-        - RunAs - equals "root"
+        - RunAs -equals "root"
 
     variables:
       - group: NightlyBlobFuse
