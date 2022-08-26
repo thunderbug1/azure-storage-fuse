@@ -82,7 +82,8 @@ stages:
           # install dependencies required for compiling blobfuse
           - script: |
               sudo apt-get update --fix-missing
-              sudo apt-get install ruby-full build-essential pkg-config cmake gcc g++ rpm $(fuselib) -y
+              sudo apt-get install ruby-dev build-essential pkg-config cmake gcc g++ rpm $(fuselib) -y
+              gem install public_suffix -V
               sudo gem install fpm -V
             displayName: "Installing Dependencies"
 
