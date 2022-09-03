@@ -1055,7 +1055,10 @@ stages:
     jobs:
       - job: UpdateVersion
         pool:
-          vmImage: 'ubuntu-18.04'
+          name: "blobfuse-ubuntu-pool"
+          demands:
+            - ImageOverride -equals "blobfuse-ubuntu20"
+
         variables:
           - group: NightlyBlobFuse
           - name: root_dir
@@ -1076,14 +1079,16 @@ stages:
                 inputs:
                   artifactName: 'blobfuse2'
                   downloadPath: $(Build.ArtifactStagingDirectory)
-              
+                  itemPattern: blobfuse2/blobfuse2*.deb
+
               # install blobfuse2
               - script: |
-                  cd $(Build.ArtifactStagingDirectory)/blobfuse2
-                  ls | grep ubuntu-18.04
-                  sudo apt-get install ./`ls | grep ubuntu-18.04` -y
+                  ls -l $(Build.ArtifactStagingDirectory)
+                  ls | grep ubuntu-20.04
+                  sudo apt-get install ./`ls | grep ubuntu-20.04` -y
                   blobfuse2 version
                 displayName: 'Installing blobfuse2'
+                workingDirectory: $(Build.ArtifactStagingDirectory)/blobfuse2
 
               - script: |
                   wget https://raw.githubusercontent.com/Azure/azure-storage-fuse/`echo $(Build.SourceBranch) | cut -d "/" -f 1,2 --complement`/releaseVersionUpdate.py
