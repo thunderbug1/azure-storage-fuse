@@ -3,7 +3,7 @@
 
 BlobFuse is an open source project developed to provide a virtual filesystem backed by the Azure Blob storage. It uses the [libfuse](https://github.com/libfuse/libfuse) open source library to communicate with the Linux FUSE kernel module, and implements the filesystem operations using the Azure Storage Blob REST APIs.
 
-Blobfuse is stable, and is ***supported by Microsoft*** provided that it is used within its limits documented here. Blobfuse supports both reads and writes however, it does guarantee continuous sync on data written to storage using other APIs or other mounts of blobfuse. For data integrity it is recommended that multiple sources do not modify the same blob. Please submit an issue [here](https://github.com/azure/azure-storage-fuse/issues) for any issues/requests/questions.
+Blobfuse is stable, and is ***supported by Microsoft*** provided that it is used within its limits documented here. Blobfuse supports both reads and writes however, it does not guarantee continuous sync on data written to storage using other APIs or other mounts of blobfuse. For data integrity it is recommended that multiple sources do not modify the same blob. Please submit an issue [here](https://github.com/azure/azure-storage-fuse/issues) for any issues/requests/questions.
 
 ### If you would like to access next generation blobfuse, please refer to [blobfuse2](https://github.com/Azure/azure-storage-fuse/tree/main). Preview binaries are available [here](https://github.com/Azure/azure-storage-fuse/releases/tag/blobfuse2-2.0.0-preview2)
 ### We will continue to respond to issues on legacy blobfuse. However no more feature requests will be taken up. 
